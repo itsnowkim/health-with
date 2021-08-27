@@ -32,13 +32,13 @@ const Workout = ({ route }) => {
     const [secondAngle,setSecondAngle] = useState(false)
 
     // 임시
-    const [DATA,setDATA] = useState([
-        {
-            title:'',
-            tag:[{name:'',color:''}],
-            data:[{rep:'',weight:'',time:null}]
-        }
-    ])
+    // const [DATA,setDATA] = useState([
+    //     {
+    //         title:'',
+    //         tag:[{name:'',color:''}],
+    //         data:[{rep:'',weight:'',time:null}]
+    //     }
+    // ])
     const [AllTag,setAllTag] = useState([
         {name:'등',color:COLORS.tag_darkblue},
         {name:'가슴',color:COLORS.tag_green},
@@ -69,6 +69,30 @@ const Workout = ({ route }) => {
     //         ]
     //     }
     // ])
+    const [DATA, setDATA] = useState([
+        {
+          title: '랫풀다운',
+          tag: [{name:'등',color:COLORS.tag_darkblue}],
+          data: [
+            {rep: 10, weight: 40, time: null},
+            {rep: 10, weight: 40, time: null},
+            {rep: 10, weight: 40, time: null},
+            {rep: 10, weight: 40, time: null},
+            {rep: 10, weight: 40, time: null}
+          ]
+        },
+        {
+          title: '데드리프트',
+          tag: [{name:'등',color:COLORS.tag_darkblue},{name:'하체',color:COLORS.tag_purple}],
+          data: [
+            {rep: 10, weight: 80, time: null},
+            {rep: 10, weight: 80, time: null},
+            {rep: 10, weight: 80, time: null},
+            {rep: 10, weight: 80, time: null},
+            {rep: 10, weight: 100, time: null},
+          ]
+        }
+      ])
 
     function fetchData(){
         // get data from local storage
@@ -243,10 +267,6 @@ const Workout = ({ route }) => {
     //     }
     // },[bottomSheetOpened])
 
-    function bottomSheetController (){
-        setBottomSheetOpened(!bottomSheetOpened)
-    }
-
     function renderfirstSection (){
         return(
             <View>
@@ -362,7 +382,20 @@ const Workout = ({ route }) => {
 
     const renderbottomsheet = () => (
         <View style={styles.tagContainer}>
-            <View style={styles.tagTitleContainer}>
+            {/* <View style={styles.rowcontainer}>
+                <View></View>
+                <TouchableOpacity onPress={()=>{
+                    setBottomSheetOpened(false)
+                    TagSheet.current.snapTo(1)
+                }}>
+                    <FontAwesome
+                        name="check"
+                        color={COLORS.primary}
+                        style={{transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }]}}
+                    />
+                </TouchableOpacity>
+            </View> */}
+            <View style={{marginBottom:20}}>
                 <Text style={styles.title}>태그 목록</Text>
                 <Line3/>
                 <ScrollView style={{paddingTop:SIZES.padding2}} horizontal={true}>  
@@ -462,9 +495,8 @@ const Workout = ({ route }) => {
                 <View style={{flexDirection:'row', alignItems:'center'}}>
                     <FontAwesome
                     name="arrow-right"
-                    backgroundColor={COLORS.transparent}
-                    color={COLORS.primary}
-                    style={{transform: [{ scaleX: 1.2 }, { scaleY: 1 }]}}
+                    color={COLORS.gray}
+                    style={{transform: [{ scaleX: 1 }, { scaleY: 1 }]}}
                     />
                     <Text style={[styles.text,{marginLeft:SIZES.padding2*2}]}>{innerindex + 1}세트</Text>
                 </View>
@@ -472,9 +504,9 @@ const Workout = ({ route }) => {
                     <View style={{alignItems:'center',marginRight:SIZES.padding}}>
                     <TextInput
                         keyboardType='numeric'
-                        style={{ fontSize:SIZES.body3,fontFamily:'RobotoBold'}}
+                        style={{ fontSize:SIZES.body4,fontFamily:'RobotoBold'}}
                         onChangeText={(event)=>handleWeight(event,innerindex,index)}
-                        value={DATA[index].data[innerindex].weight}
+                        value={DATA[index].data[innerindex].weight.toString()}
                         // onEndEditing={()=>onEndEditing()}
                         autoCompleteType='off'
                         placeholder='  '
@@ -488,9 +520,9 @@ const Workout = ({ route }) => {
                     <View style={{alignItems:'center',marginRight:SIZES.padding}}>
                     <TextInput
                         keyboardType='numeric'
-                        style={{ fontSize:SIZES.body3,fontFamily:'RobotoBold'}}
+                        style={{ fontSize:SIZES.body4,fontFamily:'RobotoBold'}}
                         onChangeText={(event)=>handleReps(event,innerindex,index)}
-                        value={DATA[index].data[innerindex].rep}
+                        value={DATA[index].data[innerindex].rep.toString()}
                         // onEndEditing={()=>onEndEditing()}
                         autoCompleteType='off'
                         placeholder='  '
@@ -500,10 +532,14 @@ const Workout = ({ route }) => {
                     </View>
                     <Text style={styles.text}>회</Text>
                 </View>
-                <TouchableOpacity onPress={()=>{
+                <TouchableOpacity style={{marginRight:SIZES.padding}} onPress={()=>{
                     delSets(index,innerindex)
                 }}>
-                    <Text style={{color:COLORS.primary, fontSize:SIZES.body1,fontFamily:'RobotoBold',marginRight:'3%',marginBottom:3}}>-</Text>
+                    <FontAwesome
+                    name="minus"
+                    color={COLORS.gray}
+                    style={{transform: [{ scaleX: 1 }, { scaleY: 1 }]}}
+                    />
                 </TouchableOpacity>
             </View>
         )
@@ -625,7 +661,6 @@ const Workout = ({ route }) => {
                     }}>
                         <FontAwesome
                             name="plus"
-                            backgroundColor={COLORS.transparent}
                             color={COLORS.primary}
                             style={{transform: [{ scaleX: 1.2 }, { scaleY: 1.2 }]}}
                         />
@@ -682,7 +717,7 @@ const Workout = ({ route }) => {
             }
             <BottomSheet
                 ref={TagSheet}
-                snapPoints={[600, 0, 0]}
+                snapPoints={[680, 0, 0]}
                 borderRadius={20}
                 renderContent={()=>renderbottomsheet()}
                 initialSnap={1}
@@ -714,21 +749,23 @@ const styles = StyleSheet.create({
     rowcontainer:{
         flexDirection:'row',
         justifyContent:'space-between',
-        alignItems:'center'
+        alignItems:'center',
+        marginTop:3,
+        marginBottom:3
     },
     title: {
         fontSize: SIZES.body3,
         fontFamily: 'RobotoMedium',
-        paddingRight: SIZES.base
+        paddingRight: SIZES.base,
     },
     text:{
         fontFamily:'RobotoRegular',
-        fontSize:SIZES.body3
+        fontSize:SIZES.body4
     },
     tagContainer:{
         backgroundColor: 'white',
         padding: SIZES.padding*2,
-        height: 600,
+        height: 680,
     },
     tagTitleContainer:{
         marginTop:20,
