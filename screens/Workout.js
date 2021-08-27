@@ -220,28 +220,14 @@ const Workout = ({ route }) => {
         }
     }
     function deleteWorkout(index){
-        const temp = DATA.filter((item,j)=>j!==index);
-        let result = [...DATA];
-        
-        console.log(result)
-        if(temp.length === 0){
-            setDATA([{title:'',tag:[{name:'',color:''}],data:[{rep:'',weight:'',time:null}]}])
+        console.log('삭제버튼 누름')
+        if(DATA.length === 1){
+            setDATA([{title:'',tag:[],data:[{rep:'',weight:'',time:null}]}])
         }else{
-            console.log(result)
+            setWhichTag(0)
+            setDATA(prevArr => (prevArr.filter((value,i)=>i!==index)))
         }
     }
-    // useEffect(()=>{
-    //     if (bottomSheetOpened === true){
-    //         //change background color
-    //         console.log('opened!')
-    //         let backgroundColor = 'red'
-    //         styles.container.backgroundColor = backgroundColor
-    //     }else{
-    //         console.log('closed!')
-    //         let backgroundColor = 'blue'
-    //         styles.container.backgroundColor = backgroundColor
-    //     }
-    // },[bottomSheetOpened])
 
     function renderfirstSection (){
         return(
@@ -574,7 +560,7 @@ const Workout = ({ route }) => {
                                 onPress: () => console.log("Cancel Pressed"),
                                 style: "cancel"
                               },
-                              { text: "OK", onPress: () => console.log('ok button pressed') }
+                              { text: "OK", onPress: () => deleteWorkout(index) }
                             ],
                             { cancelable: false }
                           );
@@ -678,6 +664,7 @@ const Workout = ({ route }) => {
                             DATA.map((data,index)=>renderForm(data,index))
                         }
                     </View>
+                    <View style={{height:600}}></View>
                 </ScrollView>
             </SafeAreaView>
             :
@@ -688,6 +675,7 @@ const Workout = ({ route }) => {
                             DATA.map((data,index)=>renderForm(data,index))
                         }
                     </View>
+                    <View style={{height:600}}></View>
                 </ScrollView>
             </SafeAreaView>
             }
