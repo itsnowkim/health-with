@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Switch, TextInput } from "react-native";
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Switch, TextInput, Alert } from "react-native";
 import { ScrollView } from 'react-native-gesture-handler';
 import { COLORS, SIZES } from '../constants';
 import Line3 from '../components/Line3';
@@ -31,7 +31,6 @@ const Workout = ({ route }) => {
     const [firstAngle,setFirstAngle] = useState(false)
     const [secondAngle,setSecondAngle] = useState(false)
 
-
     // 임시
     const [DATA,setDATA] = useState([
         {
@@ -49,24 +48,24 @@ const Workout = ({ route }) => {
     // const [DATA,setDATA] = useState([
     //     {
     //         title: '랫풀다운',
-    //         tag: [{name:'등',color:COLORS.tag_orange}],
+    //         tag: [{name:'등',color:COLORS.tag_darkblue}],
     //         data: [
-    //             {rep: 10, weight: 40, time: null},
-    //             {rep: 10, weight: 40, time: null},
-    //             {rep: 10, weight: 40, time: null},
-    //             {rep: 10, weight: 40, time: null},
-    //             {rep: 10, weight: 40, time: null}
+    //             {rep: '10', weight: '40', time: null},
+    //             {rep: '10', weight: '40', time: null},
+    //             {rep: '10', weight: '40', time: null},
+    //             {rep: '10', weight: '40', time: null},
+    //             {rep: '10', weight: '40', time: null}
     //         ]
     //     },
     //     {
     //         title: '데드리프트',
     //         tag: [{name:'등',color:COLORS.tag_darkblue},{name:'하체',color:COLORS.tag_purple}],
     //         data: [
-    //             {rep: 10, weight: 80, time: null},
-    //             {rep: 10, weight: 80, time: null},
-    //             {rep: 10, weight: 80, time: null},
-    //             {rep: 10, weight: 80, time: null},
-    //             {rep: 10, weight: 100, time: null},
+    //             {rep: '10', weight: '80', time: null},
+    //             {rep: '10', weight: '80', time: null},
+    //             {rep: '10', weight: '80', time: null},
+    //             {rep: '10', weight: '80', time: null},
+    //             {rep: '10', weight: '100', time: null},
     //         ]
     //     }
     // ])
@@ -102,7 +101,6 @@ const Workout = ({ route }) => {
 
         let temp = [...DATA];
 
-
         let istrue = false
         temp[whichTag].tag.map((i,j)=>{
             if(i.name === name){
@@ -124,13 +122,13 @@ const Workout = ({ route }) => {
             }
             setDATA(temp)
         }
-        console.log(temp)
-    }
-    function handleTagDelete(index){        
-        const temp = DATA[whichTag].tag.filter((item,j)=>j!==index);
         //console.log(temp)
+    }
+    function handleTagDelete(index,innerindex){
+        const temp = DATA[index].tag.filter((item,j)=>j!==innerindex);
+        
         let result = [...DATA];
-        result[whichTag] = {...result[whichTag],tag:temp}
+        result[index] = {...result[index],tag:temp}
         setDATA(result)
     }
 
@@ -154,7 +152,7 @@ const Workout = ({ route }) => {
         if(tagUpdate.name !== ''){
             let temp = [...AllTag];
             temp[tagUpdate.index] = {...temp[tagUpdate.index], name:tagUpdate.name,color:tagUpdate.color}
-            console.log(temp)
+            //console.log(temp)
             setAllTag(temp)
         }
     }
@@ -165,16 +163,13 @@ const Workout = ({ route }) => {
     function delSets(index,innerindex){
         let count = DATA[index].data.length
 
-        console.log(count)
         if(count!==1){
             const temp = DATA[index].data.filter((item,j)=>j!==innerindex);
             let result = [...DATA];
             result[index] = {...result[index],data:temp}
             setDATA(result)
-            console.log('그냥 지우는 로직')
         }
     }
-
     function addSets(index){
         let count = DATA[index].data.length;
         let push = {
@@ -187,7 +182,6 @@ const Workout = ({ route }) => {
         
         setDATA(temp)
     }
-
     // 태그를 새로 만드는 함수
     // db에 수정된 데이터 upload
     //setAllTag()에 수정된 데이터 push
@@ -200,7 +194,42 @@ const Workout = ({ route }) => {
     function handleTagCustomizeUpdate(event,color){
         setTagUpdate({name:event,color:color,index:tagUpdate.index})
     }
+    function checkform(index){
+        if(DATA[index].title !== ''){
+            return true
+        }else{
+            return false
+        }
+    }
+    function addNewWorkout(index){
+        // 한번 클릭한 버튼은 다시 나오면 안됨
+        if(DATA[index].title !== ''){
+            const temp = {
+                title:'',
+                tag:[{name:'',color:''}],
+                data:[{rep:'',weight:'',time:null}]
+            }
+            let res = [...DATA];
+            res[index + 1] = temp
+            console.log(res)
 
+            setDATA(res)
+            return true
+        }else{
+            return false
+        }
+    }
+    function deleteWorkout(index){
+        const temp = DATA.filter((item,j)=>j!==index);
+        let result = [...DATA];
+        
+        console.log(result)
+        if(temp.length === 0){
+            setDATA([{title:'',tag:[{name:'',color:''}],data:[{rep:'',weight:'',time:null}]}])
+        }else{
+            console.log(result)
+        }
+    }
     // useEffect(()=>{
     //     if (bottomSheetOpened === true){
     //         //change background color
@@ -225,7 +254,6 @@ const Workout = ({ route }) => {
                     {
                         TagColors.map((d,i)=>(
                             <TouchableOpacity key={i} onPress={()=>{
-                                console.log(i)
                                 setTagCustomize({name:tagCustomize.name,color:d})
                             }}>
                                 <View style={{marginRight:SIZES.padding2,borderRadius:35, backgroundColor:d, width:SIZES.h2,height:SIZES.h2}}></View>
@@ -286,7 +314,6 @@ const Workout = ({ route }) => {
                     {
                         TagColors.map((d,i)=>(
                             <TouchableOpacity key={i} onPress={()=>{
-                                console.log(i)
                                 setTagUpdate({name:tagUpdate.name,color:d,index:tagUpdate.index})
                             }}>
                                 <View style={{marginRight:SIZES.padding2,borderRadius:35, backgroundColor:d, width:SIZES.h2,height:SIZES.h2}}></View>
@@ -357,7 +384,7 @@ const Workout = ({ route }) => {
                 {
                     DATA[whichTag].tag.map((d,i)=>(
                         <TouchableOpacity key={i} onPress={()=>{
-                            handleTagDelete(i)
+                            handleTagDelete(whichTag,i)
                         }}>
                             <Tag name={d.name} color={d.color}></Tag>
                         </TouchableOpacity>
@@ -502,23 +529,45 @@ const Workout = ({ route }) => {
                         autoCompleteType='off'
                         autoCorrect={false}
                     />
-                    <View style={{flexDirection:'row', alignItems:'center'}}>
+                    <TouchableOpacity onPress={()=>{
+                        Alert.alert(
+                            "정말 삭제하시겠습니까?",
+                            `${DATA[index].title}을 삭제합니다`,
+                            [
+                              {
+                                text: "Cancel",
+                                onPress: () => console.log("Cancel Pressed"),
+                                style: "cancel"
+                              },
+                              { text: "OK", onPress: () => console.log('ok button pressed') }
+                            ],
+                            { cancelable: false }
+                          );
+                    }}>
+                        <FontAwesome
+                            name="trash"
+                            color={COLORS.gray}
+                            style={{transform: [{ scaleX: 1.2 }, { scaleY: 1.2 }],marginRight:10}}
+                        />
+                    </TouchableOpacity>
+                </View>       
+                <Line2/>
+                <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between', marginTop:SIZES.padding}}>
+                    <ScrollView horizontal={true}>
                     {
-                        DATA[index].tag.map((item,index)=>(                        
-                            <TouchableOpacity key={index} onPress={()=>{
-                                handleTagDelete(index)
+                        renderTagPlus(index)
+                    }
+                    {
+                        DATA[index].tag.map((item,j)=>(                        
+                            <TouchableOpacity key={j} onPress={()=>{
+                                handleTagDelete(index,j)
                             }}>
                                 <Tag name={item.name} color={item.color}></Tag>
                             </TouchableOpacity>
                         ))
                     }
-                    {
-                        renderTagPlus(index)
-                    }
-                    </View>
-                    
+                    </ScrollView>
                 </View>
-                <Line2/>
             </>
         )
     }
@@ -530,12 +579,16 @@ const Workout = ({ route }) => {
             <View style={{margin:'3%'}}>
                 <View style={styles.rowcontainer}>
                     <View style={{flexDirection:'row', alignItems:'center'}}>
-                        <Text style={{fontFamily:'RobotoRegular',fontSize:SIZES.body4}}>아이콘</Text>
+                        <FontAwesome
+                            name="fire"
+                            color={COLORS.primary}
+                            style={{transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }],marginRight:10}}
+                        />
                         <Text style={{fontFamily:'RobotoRegular',fontSize:SIZES.body4}}>고급기능</Text>
                     </View>
                     <Switch
                         trackColor={{true:COLORS.primary}}
-                        onValueChange={toggleSwitch}
+                        onValueChange={()=>toggleSwitch()}
                         value={isEnabled}
                         style={{transform: [{ scaleX: .8 }, { scaleY: .8 }]}}
                     />
@@ -561,9 +614,12 @@ const Workout = ({ route }) => {
                     </TouchableOpacity>
                 </View>
             </View>
-            <View style={{marginTop:40, marginBottom:40}}>
-                <Line3/>
-            </View>
+            <Line3/>
+            <TouchableOpacity style={{justifyContent:'center', alignItems:'center'}} onPress={()=>{
+                addNewWorkout(index)
+            }}>
+                <Text>새로운 운동 추가</Text>
+            </TouchableOpacity>
             </>
         )
     }
@@ -572,7 +628,11 @@ const Workout = ({ route }) => {
         return(
             <View key={index}>
             {renderHeader(index)}
-            {renderBody(index)}
+            {
+                checkform(index)?
+                renderBody(index):
+                <View/>
+            }
             </View>
         )
     }
@@ -590,22 +650,23 @@ const Workout = ({ route }) => {
             </SafeAreaView>
             :
             <SafeAreaView style={{flex:1}}>
-            <ScrollView>
-                <View style={{margin:'5%',}}>
-                    {
-                        DATA.map((data,index)=>renderForm(data,index))
-                    }
-                </View>
-            </ScrollView>
-        </SafeAreaView>}
+                <ScrollView>
+                    <View style={{margin:'5%',}}>
+                        {
+                            DATA.map((data,index)=>renderForm(data,index))
+                        }
+                    </View>
+                </ScrollView>
+            </SafeAreaView>
+            }
             <BottomSheet
                 ref={TagSheet}
                 snapPoints={[600, 0, 0]}
                 borderRadius={20}
-                renderContent={renderbottomsheet}
+                renderContent={()=>renderbottomsheet()}
                 initialSnap={1}
-                onOpenStart={bottomSheetController}
-                onCloseEnd={bottomSheetController}
+                onOpenStart={()=>setBottomSheetOpened(true)}
+                onCloseEnd={()=>setBottomSheetOpened(false)}
                 enabledContentTapInteraction={false}       
             />
         </>
