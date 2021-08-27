@@ -37,7 +37,7 @@ const Workout = ({ route }) => {
         {
             title:'',
             tag:[{name:'',color:''}],
-            data:[{rep:'',weight:'',time:''}]
+            data:[{rep:'',weight:'',time:null}]
         }
     ])
     const [AllTag,setAllTag] = useState([
@@ -128,7 +128,7 @@ const Workout = ({ route }) => {
     }
     function handleTagDelete(index){        
         const temp = DATA[whichTag].tag.filter((item,j)=>j!==index);
-        console.log(temp)
+        //console.log(temp)
         let result = [...DATA];
         result[whichTag] = {...result[whichTag],tag:temp}
         setDATA(result)
@@ -158,9 +158,34 @@ const Workout = ({ route }) => {
             setAllTag(temp)
         }
     }
-
     function handleTagCustomizeAdd(event,color){
         setTagCustomize({name:event,color:color})
+    }
+
+    function delSets(index,innerindex){
+        let count = DATA[index].data.length
+
+        console.log(count)
+        if(count!==1){
+            const temp = DATA[index].data.filter((item,j)=>j!==innerindex);
+            let result = [...DATA];
+            result[index] = {...result[index],data:temp}
+            setDATA(result)
+            console.log('그냥 지우는 로직')
+        }
+    }
+
+    function addSets(index){
+        let count = DATA[index].data.length;
+        let push = {
+            rep:DATA[index].data[count-1].rep,
+            weight:DATA[index].data[count-1].weight,
+            time:DATA[index].data[count-1].time
+        }
+        let temp = [...DATA];
+        temp[index].data[count] = push
+        
+        setDATA(temp)
     }
 
     // 태그를 새로 만드는 함수
@@ -410,7 +435,7 @@ const Workout = ({ route }) => {
                     color={COLORS.primary}
                     style={{transform: [{ scaleX: 1.2 }, { scaleY: 1 }]}}
                     />
-                    <Text style={[styles.text,{marginLeft:SIZES.padding2*2}]}>1세트</Text>
+                    <Text style={[styles.text,{marginLeft:SIZES.padding2*2}]}>{innerindex + 1}세트</Text>
                 </View>
                 <View style={{flexDirection:'row'}}>
                     <View style={{alignItems:'center',marginRight:SIZES.padding}}>
@@ -442,7 +467,11 @@ const Workout = ({ route }) => {
                     </View>
                     <Text style={styles.text}>회</Text>
                 </View>
-                <TouchableOpacity><Text style={{color:COLORS.primary, fontSize:SIZES.body1,fontFamily:'RobotoBold',marginRight:'3%',marginBottom:3}}>-</Text></TouchableOpacity>
+                <TouchableOpacity onPress={()=>{
+                    delSets(index,innerindex)
+                }}>
+                    <Text style={{color:COLORS.primary, fontSize:SIZES.body1,fontFamily:'RobotoBold',marginRight:'3%',marginBottom:3}}>-</Text>
+                </TouchableOpacity>
             </View>
         )
     }
@@ -515,14 +544,20 @@ const Workout = ({ route }) => {
                     DATA[index].data.map((item,innerindex)=>rendersets(item,innerindex,index))
                 }
                 <View style={{flexDirection:'row', alignItems:'center',marginTop:SIZES.padding}}>
-                    <FontAwesome
-                        name="plus"
-                        backgroundColor={COLORS.transparent}
-                        color={COLORS.primary}
-                        style={{transform: [{ scaleX: 1.2 }, { scaleY: 1.2 }]}}
-                    />
-                    <TouchableOpacity>
-                    <Text style={{marginLeft:SIZES.padding2*2,fontSize:SIZES.body3,fontFamily:'RobotoRegular',color:'#C4C4C6'}}>세트추가</Text>
+                    <TouchableOpacity onPress={()=>{
+                        addSets(index)
+                    }}>
+                        <FontAwesome
+                            name="plus"
+                            backgroundColor={COLORS.transparent}
+                            color={COLORS.primary}
+                            style={{transform: [{ scaleX: 1.2 }, { scaleY: 1.2 }]}}
+                        />
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={()=>{
+                        addSets(index)
+                    }}>
+                        <Text style={{marginLeft:SIZES.padding2*2,fontSize:SIZES.body3,fontFamily:'RobotoRegular',color:'#C4C4C6'}}>세트추가</Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -550,8 +585,6 @@ const Workout = ({ route }) => {
                         {
                             DATA.map((data,index)=>renderForm(data,index))
                         }
-                        {/* {renderForm('','')}
-                        {renderForm('','')} */}
                     </View>
                 </ScrollView>
             </SafeAreaView>
@@ -562,8 +595,6 @@ const Workout = ({ route }) => {
                     {
                         DATA.map((data,index)=>renderForm(data,index))
                     }
-                    {/* {renderForm('','')}
-                    {renderForm('','')} */}
                 </View>
             </ScrollView>
         </SafeAreaView>}
