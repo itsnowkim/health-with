@@ -395,7 +395,9 @@ const Workout = ({ route }) => {
 
             <View style={styles.tagTitleContainer}>
                 <View style={{flexDirection:'row',justifyContent:'space-between',alignItems:'center'}}>
-                    <Text style={styles.title}>태그 추가</Text>
+                    <TouchableOpacity onPress={()=>setFirstAngle(!firstAngle)}>
+                        <Text style={styles.title}>태그 추가</Text>
+                    </TouchableOpacity>
                     {
                         !firstAngle?
                         <TouchableOpacity style={{marginTop:5}} onPress={()=>setFirstAngle(!firstAngle)}>
@@ -422,7 +424,9 @@ const Workout = ({ route }) => {
             </View>
             <View style={styles.tagTitleContainer}>
                 <View style={{flexDirection:'row',justifyContent:'space-between',alignItems:'center'}}>
-                    <Text style={styles.title}>태그 편집</Text>
+                    <TouchableOpacity onPress={()=>setSecondAngle(!secondAngle)}>
+                        <Text style={styles.title}>태그 편집</Text>
+                    </TouchableOpacity>
                         {
                             !secondAngle?
                             <TouchableOpacity style={{marginTop:5}} onPress={()=>setSecondAngle(!secondAngle)}>
@@ -515,6 +519,22 @@ const Workout = ({ route }) => {
         )
     }
 
+    //1,0 ok
+    //2,0 not ok
+    //2,1 ok
+
+    function checkandRender(index) {
+        if(DATA.length - index <= 1){
+            return(
+                <TouchableOpacity style={{justifyContent:'center', alignItems:'center'}} onPress={()=>{
+                    addNewWorkout(index)
+                }}>
+                    <Text>새로운 운동 추가</Text>
+                </TouchableOpacity>
+            )
+        }
+    }
+
     function renderHeader(index){
         console.log(DATA)
         return(
@@ -585,7 +605,7 @@ const Workout = ({ route }) => {
                             color={COLORS.primary}
                             style={{transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }],marginRight:10}}
                         />
-                        <Text style={{fontFamily:'RobotoRegular',fontSize:SIZES.body4}}>고급기능</Text>
+                        <Text style={{fontFamily:'RobotoRegular',fontSize:SIZES.body3}}>고급기능</Text>
                     </View>
                     <Switch
                         trackColor={{true:COLORS.primary}}
@@ -615,12 +635,10 @@ const Workout = ({ route }) => {
                     </TouchableOpacity>
                 </View>
             </View>
-            <Line3/>
-            <TouchableOpacity style={{justifyContent:'center', alignItems:'center'}} onPress={()=>{
-                addNewWorkout(index)
-            }}>
-                <Text>새로운 운동 추가</Text>
-            </TouchableOpacity>
+            <View  style={{marginBottom:20}}/>
+            {
+                checkandRender(index)
+            }
             </>
         )
     }
