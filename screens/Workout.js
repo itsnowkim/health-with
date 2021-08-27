@@ -471,6 +471,7 @@ const Workout = ({ route }) => {
                 <View style={{flexDirection:'row'}}>
                     <View style={{alignItems:'center',marginRight:SIZES.padding}}>
                     <TextInput
+                        keyboardType='numeric'
                         style={{ fontSize:SIZES.body3,fontFamily:'RobotoBold'}}
                         onChangeText={(event)=>handleWeight(event,innerindex,index)}
                         value={DATA[index].data[innerindex].weight}
@@ -486,6 +487,7 @@ const Workout = ({ route }) => {
                 <View style={{flexDirection:'row'}}>
                     <View style={{alignItems:'center',marginRight:SIZES.padding}}>
                     <TextInput
+                        keyboardType='numeric'
                         style={{ fontSize:SIZES.body3,fontFamily:'RobotoBold'}}
                         onChangeText={(event)=>handleReps(event,innerindex,index)}
                         value={DATA[index].data[innerindex].rep}
@@ -529,7 +531,7 @@ const Workout = ({ route }) => {
                 <TouchableOpacity style={{justifyContent:'center', alignItems:'center'}} onPress={()=>{
                     addNewWorkout(index)
                 }}>
-                    <Text>새로운 운동 추가</Text>
+                    <Text style={[styles.text,{color:COLORS.primary}]} >새로운 운동 추가</Text>
                 </TouchableOpacity>
             )
         }
