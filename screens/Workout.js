@@ -193,7 +193,120 @@ const Workout = ({ route }) => {
         setBottomSheetOpened(!bottomSheetOpened)
     }
 
-    
+    function renderfirstSection (){
+        return(
+            <View>
+                <View style={{flexDirection:'row', marginTop:SIZES.padding2, marginLeft:'1%'}}>
+                    {
+                        TagColors.map((d,i)=>(
+                            <TouchableOpacity key={i} onPress={()=>{
+                                console.log(i)
+                                setTagCustomize({name:tagCustomize.name,color:d})
+                            }}>
+                                <View style={{marginRight:SIZES.padding2,borderRadius:35, backgroundColor:d, width:SIZES.h2,height:SIZES.h2}}></View>
+                            </TouchableOpacity>
+                        ))
+                    }
+                </View>
+                <View style={{marginTop:30}}>
+                    <View style={{flexDirection:'row',alignItems:'center', justifyContent:'space-around'}}>
+                        <TextInput
+                            style={{ height:23, fontFamily:'RobotoBold',fontSize:SIZES.body4,color:COLORS.lightWhite,backgroundColor:tagCustomize.color,paddingRight:5,paddingLeft:5, borderRadius:SIZES.radius}}
+                            onChangeText={(event)=>handleTagCustomizeAdd(event,tagCustomize.color)}
+                            value={tagCustomize.name}
+                            // onEndEditing={()=>onEndEditing()}
+                            autoCompleteType='off'
+                            placeholder='태그명을 입력하세요'
+                            autoCorrect={false}
+                            placeholderTextColor='#ffffff'
+                        />
+                        <TouchableOpacity
+                            onPress={()=>{
+                                addNewTag()
+                            }}
+                        >
+                            {
+                                tagCustomize.name !== ''?
+                                <FontAwesome
+                                name="check"
+                                color={COLORS.primary}
+                                style={{transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }],marginRight:20}}
+                                />:
+                                <FontAwesome
+                                name="check"
+                                color={COLORS.gray}
+                                style={{transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }],marginRight:20}}
+                                />
+                            }
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </View>
+        )
+    }
+    function renderSecondSection (){
+        return(
+            <View>
+                <ScrollView style={{paddingTop:SIZES.padding2}} horizontal={true}>  
+                    {
+                    AllTag.map((d,i)=>(
+                        <TouchableOpacity key={i} onPress={()=>{
+                            setTagUpdate({name:d.name,color:d.color,index:i})
+                        }}>
+                            <Tag name={d.name} color={d.color}></Tag>
+                        </TouchableOpacity>
+                    ))}
+                </ScrollView>
+                <View style={{flexDirection:'row', marginTop:SIZES.padding2,marginLeft:'1%'}}>
+                    {
+                        TagColors.map((d,i)=>(
+                            <TouchableOpacity key={i} onPress={()=>{
+                                console.log(i)
+                                setTagUpdate({name:tagUpdate.name,color:d,index:tagUpdate.index})
+                            }}>
+                                <View style={{marginRight:SIZES.padding2,borderRadius:35, backgroundColor:d, width:SIZES.h2,height:SIZES.h2}}></View>
+                            </TouchableOpacity>
+                        ))
+                    }
+                </View>
+                {
+                    tagUpdate.index !== null ?
+                    <View style={{marginTop:30}}>
+                        <View style={{flexDirection:'row',alignItems:'center', justifyContent:'space-around'}}>
+                            <TextInput
+                                style={{ height:23, fontFamily:'RobotoBold',fontSize:SIZES.body4,color:COLORS.lightWhite,backgroundColor:tagUpdate.color,paddingRight:5,paddingLeft:5, borderRadius:SIZES.radius}}
+                                onChangeText={(event)=>handleTagCustomizeUpdate(event,tagUpdate.color)}
+                                value={tagUpdate.name}
+                                // onEndEditing={()=>onEndEditing()}
+                                autoCompleteType='off'
+                                autoCorrect={false}
+                            />
+                            <TouchableOpacity
+                                onPress={()=>{
+                                    updateTagCustom()
+                                }}
+                            >
+                                {
+                                    tagUpdate.name !== ''?
+                                    <FontAwesome
+                                    name="check"
+                                    color={COLORS.primary}
+                                    style={{transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }],marginRight:20}}
+                                    />:
+                                    <FontAwesome
+                                    name="check"
+                                    color={COLORS.gray}
+                                    style={{transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }],marginRight:20}}
+                                    />
+                                }
+                            </TouchableOpacity>
+                        </View>
+                    </View> :
+                    <View></View>
+                }
+            </View>
+        )
+    }
 
     const renderbottomsheet = () => (
         <View style={styles.tagContainer}>
@@ -234,132 +347,53 @@ const Workout = ({ route }) => {
                     {
                         !firstAngle?
                         <TouchableOpacity style={{marginTop:5}} onPress={()=>setFirstAngle(!firstAngle)}>
-                        <FontAwesome
-                            name="angle-down"
-                            style={{transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }],marginRight:20}}
-                        />
-                        </TouchableOpacity>:
+                            <FontAwesome
+                                name="angle-down"
+                                style={{transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }],marginRight:20}}
+                            />
+                        </TouchableOpacity>
+                        :
                         <TouchableOpacity style={{marginTop:5}} onPress={()=>setFirstAngle(!firstAngle)}>
-                        <FontAwesome
-                            name="angle-up"
-                            style={{transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }],marginRight:20}}
-                        />
-                    </TouchableOpacity>
+                            <FontAwesome
+                                name="angle-up"
+                                style={{transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }],marginRight:20}}
+                            />
+                        </TouchableOpacity>
                     }
                 </View>
                 <Line3/>
-                <View>
-                    <View style={{flexDirection:'row', marginTop:SIZES.padding2, marginLeft:'1%'}}>
-                        {
-                            TagColors.map((d,i)=>(
-                                <TouchableOpacity key={i} onPress={()=>{
-                                    console.log(i)
-                                    setTagCustomize({name:tagCustomize.name,color:d})
-                                }}>
-                                    <View style={{marginRight:SIZES.padding2,borderRadius:35, backgroundColor:d, width:SIZES.h2,height:SIZES.h2}}></View>
-                                </TouchableOpacity>
-                            ))
-                        }
-                    </View>
-                    <View style={{marginTop:30}}>
-                        <View style={{flexDirection:'row',alignItems:'center', justifyContent:'space-around'}}>
-                            <TextInput
-                                style={{ height:23, fontFamily:'RobotoBold',fontSize:SIZES.body4,color:COLORS.lightWhite,backgroundColor:tagCustomize.color,paddingRight:5,paddingLeft:5, borderRadius:SIZES.radius}}
-                                onChangeText={(event)=>handleTagCustomizeAdd(event,tagCustomize.color)}
-                                value={tagCustomize.name}
-                                // onEndEditing={()=>onEndEditing()}
-                                autoCompleteType='off'
-                                placeholder='태그명을 입력하세요'
-                                autoCorrect={false}
-                                placeholderTextColor='#ffffff'
-                            />
-                            <TouchableOpacity
-                                onPress={()=>{
-                                    addNewTag()
-                                }}
-                            >
-                                {
-                                    tagCustomize.name !== ''?
-                                    <FontAwesome
-                                    name="check"
-                                    color={COLORS.primary}
-                                    style={{transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }],marginRight:20}}
-                                    />:
-                                    <FontAwesome
-                                    name="check"
-                                    color={COLORS.gray}
-                                    style={{transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }],marginRight:20}}
-                                    />
-                                }
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                </View>
+                {
+                    firstAngle?
+                    renderfirstSection():
+                    <View></View>
+                }
             </View>
             <View style={styles.tagTitleContainer}>
-                <Text style={styles.title}>태그 편집</Text>
-                <Line3/>
-                <View>
-                    <ScrollView style={{paddingTop:SIZES.padding2}} horizontal={true}>  
+                <View style={{flexDirection:'row',justifyContent:'space-between',alignItems:'center'}}>
+                    <Text style={styles.title}>태그 편집</Text>
                         {
-                        AllTag.map((d,i)=>(
-                            <TouchableOpacity key={i} onPress={()=>{
-                                setTagUpdate({name:d.name,color:d.color,index:i})
-                            }}>
-                                <Tag name={d.name} color={d.color}></Tag>
-                            </TouchableOpacity>
-                        ))}
-                    </ScrollView>
-                    <View style={{flexDirection:'row', marginTop:SIZES.padding2,marginLeft:'1%'}}>
-                        {
-                            TagColors.map((d,i)=>(
-                                <TouchableOpacity key={i} onPress={()=>{
-                                    console.log(i)
-                                    setTagUpdate({name:tagUpdate.name,color:d,index:tagUpdate.index})
-                                }}>
-                                    <View style={{marginRight:SIZES.padding2,borderRadius:35, backgroundColor:d, width:SIZES.h2,height:SIZES.h2}}></View>
-                                </TouchableOpacity>
-                            ))
-                        }
-                    </View>
-                    {
-                        tagUpdate.index !== null ?
-                        <View style={{marginTop:30}}>
-                            <View style={{flexDirection:'row',alignItems:'center', justifyContent:'space-around'}}>
-                                <TextInput
-                                    style={{ height:23, fontFamily:'RobotoBold',fontSize:SIZES.body4,color:COLORS.lightWhite,backgroundColor:tagUpdate.color,paddingRight:5,paddingLeft:5, borderRadius:SIZES.radius}}
-                                    onChangeText={(event)=>handleTagCustomizeUpdate(event,tagUpdate.color)}
-                                    value={tagUpdate.name}
-                                    // onEndEditing={()=>onEndEditing()}
-                                    autoCompleteType='off'
-                                    autoCorrect={false}
+                            !secondAngle?
+                            <TouchableOpacity style={{marginTop:5}} onPress={()=>setSecondAngle(!secondAngle)}>
+                                <FontAwesome
+                                    name="angle-down"
+                                    style={{transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }],marginRight:20}}
                                 />
-                                <TouchableOpacity
-                                    onPress={()=>{
-                                        updateTagCustom()
-                                    }}
-                                >
-                                    {
-                                        tagUpdate.name !== ''?
-                                        <FontAwesome
-                                        name="check"
-                                        color={COLORS.primary}
-                                        style={{transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }],marginRight:20}}
-                                        />:
-                                        <FontAwesome
-                                        name="check"
-                                        color={COLORS.gray}
-                                        style={{transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }],marginRight:20}}
-                                        />
-                                    }
-                                </TouchableOpacity>
-                            </View>
-                        </View> :
-                        <View></View>
-                    }
-                    
-                    
+                            </TouchableOpacity>
+                            :
+                            <TouchableOpacity style={{marginTop:5}} onPress={()=>setSecondAngle(!secondAngle)}>
+                                <FontAwesome
+                                    name="angle-up"
+                                    style={{transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }],marginRight:20}}
+                                />
+                            </TouchableOpacity>
+                        }
                 </View>
+                <Line3/>
+                {
+                    secondAngle?
+                    renderSecondSection():
+                    <View></View>
+                }
             </View>
         </View>
     )
