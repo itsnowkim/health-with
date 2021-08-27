@@ -26,7 +26,6 @@ const WorkoutCard = ({sessionTitle, sessionBody}) => {
 
     //fetch data only mount - data 바뀔 일이 없음
     useEffect(()=>{
-        console.log('몇번?')
         fetchData(sessionTitle,sessionBody)
     },[])
 
