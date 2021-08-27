@@ -508,6 +508,7 @@ const Workout = ({ route }) => {
             <TouchableOpacity onPress={()=>{
                     setWhichTag(index)
                     TagSheet.current.snapTo(0)
+                    setBottomSheetOpened(!bottomSheetOpened)
                 }}>
                 <Tag name='+ 태그추가' color={COLORS.primary}></Tag>
             </TouchableOpacity>
@@ -665,9 +666,8 @@ const Workout = ({ route }) => {
                 borderRadius={20}
                 renderContent={()=>renderbottomsheet()}
                 initialSnap={1}
-                onOpenStart={()=>setBottomSheetOpened(true)}
+                enabledContentTapInteraction={false}
                 onCloseEnd={()=>setBottomSheetOpened(false)}
-                enabledContentTapInteraction={false}       
             />
         </>
     );
