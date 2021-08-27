@@ -32,67 +32,43 @@ const Workout = ({ route }) => {
     const [secondAngle,setSecondAngle] = useState(false)
 
     // 임시
-    // const [DATA,setDATA] = useState([
-    //     {
-    //         title:'',
-    //         tag:[{name:'',color:''}],
-    //         data:[{rep:'',weight:'',time:null}]
-    //     }
-    // ])
+    const [DATA,setDATA] = useState([
+        {
+            title:'',
+            tag:[{name:'',color:''}],
+            data:[{rep:'',weight:'',time:null}]
+        }
+    ])
     const [AllTag,setAllTag] = useState([
         {name:'등',color:COLORS.tag_darkblue},
         {name:'가슴',color:COLORS.tag_green},
         {name:'어깨',color:COLORS.tag_pink},
         {name:'하체',color:COLORS.tag_purple}
     ])
-    // const [DATA,setDATA] = useState([
+    // const [DATA, setDATA] = useState([
     //     {
-    //         title: '랫풀다운',
-    //         tag: [{name:'등',color:COLORS.tag_darkblue}],
-    //         data: [
-    //             {rep: '10', weight: '40', time: null},
-    //             {rep: '10', weight: '40', time: null},
-    //             {rep: '10', weight: '40', time: null},
-    //             {rep: '10', weight: '40', time: null},
-    //             {rep: '10', weight: '40', time: null}
-    //         ]
+    //       title: '랫풀다운',
+    //       tag: [{name:'등',color:COLORS.tag_darkblue}],
+    //       data: [
+    //         {rep: 10, weight: 40, time: null},
+    //         {rep: 10, weight: 40, time: null},
+    //         {rep: 10, weight: 40, time: null},
+    //         {rep: 10, weight: 40, time: null},
+    //         {rep: 10, weight: 40, time: null}
+    //       ]
     //     },
     //     {
-    //         title: '데드리프트',
-    //         tag: [{name:'등',color:COLORS.tag_darkblue},{name:'하체',color:COLORS.tag_purple}],
-    //         data: [
-    //             {rep: '10', weight: '80', time: null},
-    //             {rep: '10', weight: '80', time: null},
-    //             {rep: '10', weight: '80', time: null},
-    //             {rep: '10', weight: '80', time: null},
-    //             {rep: '10', weight: '100', time: null},
-    //         ]
+    //       title: '데드리프트',
+    //       tag: [{name:'등',color:COLORS.tag_darkblue},{name:'하체',color:COLORS.tag_purple}],
+    //       data: [
+    //         {rep: 10, weight: 80, time: null},
+    //         {rep: 10, weight: 80, time: null},
+    //         {rep: 10, weight: 80, time: null},
+    //         {rep: 10, weight: 80, time: null},
+    //         {rep: 10, weight: 100, time: null},
+    //       ]
     //     }
-    // ])
-    const [DATA, setDATA] = useState([
-        {
-          title: '랫풀다운',
-          tag: [{name:'등',color:COLORS.tag_darkblue}],
-          data: [
-            {rep: 10, weight: 40, time: null},
-            {rep: 10, weight: 40, time: null},
-            {rep: 10, weight: 40, time: null},
-            {rep: 10, weight: 40, time: null},
-            {rep: 10, weight: 40, time: null}
-          ]
-        },
-        {
-          title: '데드리프트',
-          tag: [{name:'등',color:COLORS.tag_darkblue},{name:'하체',color:COLORS.tag_purple}],
-          data: [
-            {rep: 10, weight: 80, time: null},
-            {rep: 10, weight: 80, time: null},
-            {rep: 10, weight: 80, time: null},
-            {rep: 10, weight: 80, time: null},
-            {rep: 10, weight: 100, time: null},
-          ]
-        }
-      ])
+    //   ])
 
     function fetchData(){
         // get data from local storage
@@ -230,7 +206,7 @@ const Workout = ({ route }) => {
         if(DATA[index].title !== ''){
             const temp = {
                 title:'',
-                tag:[{name:'',color:''}],
+                tag:[],
                 data:[{rep:'',weight:'',time:null}]
             }
             let res = [...DATA];
@@ -574,7 +550,7 @@ const Workout = ({ route }) => {
     }
 
     function renderHeader(index){
-        console.log(DATA)
+        //console.log(DATA)
         return(
             <>
                 <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}>
