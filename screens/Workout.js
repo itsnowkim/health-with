@@ -18,11 +18,26 @@ const Workout = ({ route }) => {
         temp[index] = !temp[index]
         setIsEnabled(temp)
 
+        if(measure[index] === true){
+            toggleMeasure(index)
+        }
+
         //DATA 비우기
         let del = [...DATA]
         del[index].data = [{rep:'',time:'',weight:''}]
         setDATA(del)
     }
+    const [measure, setMeasure] = useState([false]);
+    const toggleMeasure = (index) => {
+        let temp = [...measure];
+        temp[index] = !temp[index]
+        setMeasure(temp)
+
+        if(isEnabled[index]=== true){
+            toggleSwitch(index)
+        }
+    }
+
     // angledown, angleup 판단하는 state - DATA.data 개수만큼 true,false 있어야 함
     const [isPressed, setIsPressed] = useState([{
         data:[false]
@@ -293,6 +308,11 @@ const Workout = ({ route }) => {
             toggle[index+1] = false
             setIsEnabled(toggle)
 
+            // 단위 변환도 새로 만들어 주자
+            let m_toggle = [...measure];
+            m_toggle[index+1] = false
+            setMeasure(m_toggle)
+
             //angle state 처리
             let angle = [...isPressed];
             const an_res = {
@@ -312,11 +332,16 @@ const Workout = ({ route }) => {
             setDATA([{title:'',tag:[],data:[{rep:'',weight:'',time:''}]}])
             //angle state 처리
             setIsPressed([{data:[false]}])
+            setMeasure([false])
+            setIsEnabled([false])
+            measure
         }else{
             setWhichTag(0)
             setDATA(prevArr => (prevArr.filter((value,i)=>i!==index)))
             //angle state 처리
             setIsPressed(prevArr => (prevArr.filter((value,i)=>i!==index)))
+            setMeasure(prevArr => (prevArr.filter((value,i)=>i!==index)))
+            setIsEnabled(prevArr => (prevArr.filter((value,i)=>i!==index)))
         }
     }
 
@@ -612,7 +637,6 @@ const Workout = ({ route }) => {
             <View key={innerindex}>
             <View style={styles.rowcontainer}>
                 <TouchableOpacity onPress={()=>{
-                        console.log(index + '번째 운동' + innerindex + '번째 세트')
                         togglePressed(index,innerindex)
                     }}>
                     <View style={{flexDirection:'row', alignItems:'center'}}>
@@ -638,7 +662,11 @@ const Workout = ({ route }) => {
                     />
                     <Line1/>
                     </View>
-                    <Text style={styles.text}>kg</Text>
+                    {
+                        measure[index]?
+                        <Text style={styles.text}>lb</Text>:
+                        <Text style={styles.text}>kg</Text>
+                    }
                 </View>
                 <View style={{flexDirection:'row', alignItems:'center'}}>
                     <View style={{alignItems:'center'}}>
@@ -824,6 +852,22 @@ const Workout = ({ route }) => {
                         trackColor={{true:COLORS.primary}}
                         onValueChange={()=>toggleSwitch(index)}
                         value={isEnabled[index]}
+                        style={{transform: [{ scaleX: .7 }, { scaleY: .7 }]}}
+                    />
+                </View>
+                <View style={styles.rowcontainer}>
+                    <View style={{flexDirection:'row', alignItems:'center'}}>
+                        <FontAwesome
+                            name="wrench"
+                            color={COLORS.primary}
+                            style={{transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }],marginRight:10}}
+                        />
+                        <Text style={{fontFamily:'RobotoRegular',fontSize:SIZES.body3}}>단위변환</Text>
+                    </View>
+                    <Switch
+                        trackColor={{true:COLORS.primary}}
+                        onValueChange={()=>toggleMeasure(index)}
+                        value={measure[index]}
                         style={{transform: [{ scaleX: .7 }, { scaleY: .7 }]}}
                     />
                 </View>
