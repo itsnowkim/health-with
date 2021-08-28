@@ -6,7 +6,7 @@ import { useFonts } from 'expo-font';
 export const COLORS = {
   //BASE COLORS
   primary: "#D4003C", //main color
-  secondary: "#CDA0AD",
+  secondary: "#FFE6ED",
   lightPrimary: "#EABECB",
   lightSecondary: "#FFD7E2",
 

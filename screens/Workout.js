@@ -221,6 +221,15 @@ const Workout = ({ route }) => {
         setIsPressed(angle)
 
     }
+
+    //flag =>1 일 경우 rep 조절, 0일 경우 kg 조절
+    function handleLeftButtonPressed(index,innerindex,number,flag){
+        console.log(index,innerindex,number,flag)
+    }
+
+    function handleRightButtonPressed(index,innerindex,number,flag){
+        console.log(index,innerindex,number,flag)
+    }
     // 태그를 새로 만드는 함수
     // db에 수정된 데이터 upload
     //setAllTag()에 수정된 데이터 push
@@ -514,6 +523,65 @@ const Workout = ({ route }) => {
     )
     const TagSheet = React.useRef(null);
 
+    function renderAnglePressedForm(index,innerindex){
+        return(
+            <View style={{flexDirection:'row', justifyContent:'space-around'}}>
+                <View style={{marginLeft:'22%'}}>
+                    <View style={{flexDirection:'row'}}>
+                        <TouchableOpacity style={styles.leftbuttonContainer} onPress={()=>{
+                            handleLeftButtonPressed(index,innerindex,1,0)
+                        }}>
+                            <Text style={[styles.text,{color:COLORS.primary}]}>- 1</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.rightbuttonContainer} onPress={()=>{
+                            handleRightButtonPressed(index,innerindex,1,0)
+                        }}>
+                            <Text style={[styles.text,{color:'white'}]}>+1</Text>
+                        </TouchableOpacity>
+                    </View>
+                    <View style={{flexDirection:'row'}}>
+                        <TouchableOpacity style={styles.leftbuttonContainer} onPress={()=>{
+                            handleLeftButtonPressed(index,innerindex,5,0)
+                        }}>
+                            <Text style={[styles.text,{color:COLORS.primary}]}>- 5</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.rightbuttonContainer} onPress={()=>{
+                            handleRightButtonPressed(index,innerindex,5,0)
+                        }}>
+                            <Text style={[styles.text,{color:'white'}]}>+5</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+                <View style={{marginRight:'10%'}}>
+                    <View style={{flexDirection:'row'}}>
+                        <TouchableOpacity style={styles.leftbuttonContainer} onPress={()=>{
+                            handleLeftButtonPressed(index,innerindex,1,1)
+                        }}>
+                            <Text style={[styles.text,{color:COLORS.primary}]}>- 1</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.rightbuttonContainer} onPress={()=>{
+                            handleRightButtonPressed(index,innerindex,1,1)
+                        }}>
+                            <Text style={[styles.text,{color:'white'}]}>+1</Text>
+                        </TouchableOpacity>
+                    </View>
+                    <View style={{flexDirection:'row'}}>
+                        <TouchableOpacity style={styles.leftbuttonContainer} onPress={()=>{
+                            handleLeftButtonPressed(index,innerindex,5,1)
+                        }}>
+                            <Text style={[styles.text,{color:COLORS.primary}]}>- 5</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.rightbuttonContainer} onPress={()=>{
+                            handleRightButtonPressed(index,innerindex,5,1)
+                        }}>
+                            <Text style={[styles.text,{color:'white'}]}>+5</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </View>
+        )
+    }
+
     function rendersets(item,innerindex,index){
         return(
             <View key={innerindex}>
@@ -523,7 +591,12 @@ const Workout = ({ route }) => {
                         togglePressed(index,innerindex)
                     }}>
                     <View style={{flexDirection:'row', alignItems:'center'}}>
-                        <FontAwesome name="angle-down" style={{transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }]}}/>
+                        {
+                            isPressed[index].data[innerindex]?
+                            <FontAwesome name="angle-up" color={COLORS.primary} style={{transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }]}}/>
+                            :
+                            <FontAwesome name="angle-down" style={{transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }]}}/>
+                        }
                         <Text style={[styles.text,{marginLeft:SIZES.padding2*2}]}>{innerindex + 1}세트</Text>
                     </View>
                 </TouchableOpacity>
@@ -568,13 +641,9 @@ const Workout = ({ route }) => {
             </View>
             {
                 isPressed[index].data[innerindex]?
-                <View>
-                    <Text>true</Text>
-                </View>
+                renderAnglePressedForm(index,innerindex)
                 :
-                <View>
-                    <Text>false</Text>
-                </View>
+                <></>
             }
             </View>
         )
@@ -767,7 +836,7 @@ const Workout = ({ route }) => {
 
     return (
         <>{bottomSheetOpened?
-            <SafeAreaView style={{flex:1,backgroundColor:'#E8E8E8'}}>
+            <SafeAreaView style={{flex:1,backgroundColor:'#CCCCCC'}}>
                 <ScrollView>
                     <View style={{margin:'5%',}}>
                         {
@@ -835,7 +904,7 @@ const styles = StyleSheet.create({
     },
     text:{
         fontFamily:'RobotoRegular',
-        fontSize:SIZES.body4
+        fontSize:SIZES.body3
     },
     tagContainer:{
         backgroundColor: 'white',
@@ -845,6 +914,20 @@ const styles = StyleSheet.create({
     tagTitleContainer:{
         marginTop:12,
         marginBottom:12
+    },
+    leftbuttonContainer:{
+        backgroundColor:COLORS.secondary,
+        borderRadius:SIZES.radius*3,
+        margin:5,
+        paddingHorizontal:10,
+        justifyContent:'center'
+    },
+    rightbuttonContainer:{
+        backgroundColor:COLORS.primary,
+        borderRadius:SIZES.radius*3,
+        margin:5,
+        paddingHorizontal:10,
+        justifyContent:'center'
     }
 })
 
