@@ -23,6 +23,17 @@ const Workout = ({ route }) => {
         del[index].data = [{rep:'',time:'',weight:''}]
         setDATA(del)
     }
+    // angledown, angleup 판단하는 state - DATA.data 개수만큼 true,false 있어야 함
+    const [isPressed, setIsPressed] = useState([{
+        data:[false]
+    }])
+    const togglePressed = (index,innerindex) => {
+        let temp = [...isPressed];
+        console.log(index,innerindex)
+
+        temp[index].data[innerindex] = !temp[index].data[innerindex]
+        setIsPressed(temp)
+    }
     
 
     const [bottomSheetOpened,setBottomSheetOpened] = useState(false)
@@ -185,6 +196,12 @@ const Workout = ({ route }) => {
             let result = [...DATA];
             result[index] = {...result[index],data:temp}
             setDATA(result)
+
+            //angle state 처리
+            const angle = isPressed[index].data.filter((item,j)=>j!==innerindex);
+            let an_res = [...isPressed];
+            an_res[index] = {...an_res[index],data:angle}
+            setIsPressed(an_res)
         }
     }
     function addSets(index){
@@ -196,8 +213,13 @@ const Workout = ({ route }) => {
         }
         let temp = [...DATA];
         temp[index].data[count] = push
-        
         setDATA(temp)
+
+        //angle state 처리
+        let angle = [...isPressed];
+        angle[index].data[count] = false
+        setIsPressed(angle)
+
     }
     // 태그를 새로 만드는 함수
     // db에 수정된 데이터 upload
@@ -237,6 +259,14 @@ const Workout = ({ route }) => {
             toggle[index+1] = false
             setIsEnabled(toggle)
 
+            //angle state 처리
+            let angle = [...isPressed];
+            const an_res = {
+                data:[false]
+            }
+            angle[index + 1] = an_res
+            setIsPressed(angle)
+
             return true
         }else{
             return false
@@ -246,9 +276,13 @@ const Workout = ({ route }) => {
         console.log('삭제버튼 누름')
         if(DATA.length === 1){
             setDATA([{title:'',tag:[],data:[{rep:'',weight:'',time:''}]}])
+            //angle state 처리
+            setIsPressed([{data:[false]}])
         }else{
             setWhichTag(0)
             setDATA(prevArr => (prevArr.filter((value,i)=>i!==index)))
+            //angle state 처리
+            setIsPressed(prevArr => (prevArr.filter((value,i)=>i!==index)))
         }
     }
 
@@ -370,7 +404,6 @@ const Workout = ({ route }) => {
             </View>
         )
     }
-
     const renderbottomsheet = () => (
         <ScrollView style={styles.tagContainer}>
             <View style={styles.rowcontainer}>
@@ -382,7 +415,7 @@ const Workout = ({ route }) => {
                     TagSheet.current.snapTo(1)
                 }}>
                     <FontAwesome
-                        name="times"
+                        name="check"
                         style={{transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }]}}
                     />
                 </TouchableOpacity>
@@ -479,19 +512,21 @@ const Workout = ({ route }) => {
             <View style={{height:350}}></View>
         </ScrollView>
     )
-    
     const TagSheet = React.useRef(null);
 
     function rendersets(item,innerindex,index){
         return(
-            <View key={innerindex} style={styles.rowcontainer}>
-                <View style={{flexDirection:'row', alignItems:'center'}}>
-                    <FontAwesome
-                    name="angle-down"
-                    style={{transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }]}}
-                    />
-                    <Text style={[styles.text,{marginLeft:SIZES.padding2*2}]}>{innerindex + 1}세트</Text>
-                </View>
+            <View key={innerindex}>
+            <View style={styles.rowcontainer}>
+                <TouchableOpacity onPress={()=>{
+                        console.log(index + '번째 운동' + innerindex + '번째 세트')
+                        togglePressed(index,innerindex)
+                    }}>
+                    <View style={{flexDirection:'row', alignItems:'center'}}>
+                        <FontAwesome name="angle-down" style={{transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }]}}/>
+                        <Text style={[styles.text,{marginLeft:SIZES.padding2*2}]}>{innerindex + 1}세트</Text>
+                    </View>
+                </TouchableOpacity>
                 <View style={{flexDirection:'row', alignItems:'center'}}>
                     <View style={{alignItems:'center'}}>
                     <TextInput
@@ -530,6 +565,17 @@ const Workout = ({ route }) => {
                     style={{transform: [{ scaleX: 1 }, { scaleY: 1 }]}}
                     />
                 </TouchableOpacity>
+            </View>
+            {
+                isPressed[index].data[innerindex]?
+                <View>
+                    <Text>true</Text>
+                </View>
+                :
+                <View>
+                    <Text>false</Text>
+                </View>
+            }
             </View>
         )
     }
