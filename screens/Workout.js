@@ -14,12 +14,14 @@ import BottomSheet from 'reanimated-bottom-sheet';
 const Workout = ({ route }) => {
     const [isEnabled, setIsEnabled] = useState([false]);
     const toggleSwitch = (index) => {
-        // 해당 index의 스위치의 isEnabled - true false를 전환
-        console.log(index)
-
         let temp = [...isEnabled];
         temp[index] = !temp[index]
         setIsEnabled(temp)
+
+        //DATA 비우기
+        let del = [...DATA]
+        del[index].data = [{rep:'',time:'',weight:''}]
+        setDATA(del)
     }
     
 
@@ -45,7 +47,7 @@ const Workout = ({ route }) => {
         {
             title:'',
             tag:[{name:'',color:''}],
-            data:[{rep:'',weight:'',time:null}]
+            data:[{rep:'',weight:'',time:''}]
         }
     ])
     const [AllTag,setAllTag] = useState([
@@ -222,7 +224,7 @@ const Workout = ({ route }) => {
             const temp = {
                 title:'',
                 tag:[],
-                data:[{rep:'',weight:'',time:null}]
+                data:[{rep:'',weight:'',time:''}]
             }
             let res = [...DATA];
             res[index + 1] = temp
@@ -243,11 +245,17 @@ const Workout = ({ route }) => {
     function deleteWorkout(index){
         console.log('삭제버튼 누름')
         if(DATA.length === 1){
-            setDATA([{title:'',tag:[],data:[{rep:'',weight:'',time:null}]}])
+            setDATA([{title:'',tag:[],data:[{rep:'',weight:'',time:''}]}])
         }else{
             setWhichTag(0)
             setDATA(prevArr => (prevArr.filter((value,i)=>i!==index)))
         }
+    }
+
+    function handleTime(event,index){
+        let temp = [...DATA];
+        temp[index].data[0].time = event
+        setDATA(temp)
     }
 
     function renderfirstSection (){
@@ -541,7 +549,24 @@ const Workout = ({ route }) => {
     function renderAerobic(index){
         return(
             <View>
-                <Text>유산소운동</Text>
+                <Text style={{fontFamily:'RobotoRegular',fontSize:SIZES.body3}}>운동 시간</Text>
+                    <View style={{flexDirection:'row', justifyContent:'center'}}>
+                    <View style={{flexDirection:'row', alignItems:'center'}}>
+                        <View style={{alignItems:'center'}}>
+                            <TextInput
+                            keyboardType='numeric'
+                            style={{ fontSize:SIZES.body4,fontFamily:'RobotoBold'}}
+                            onChangeText={(event)=>handleTime(event,index)}
+                            value={DATA[index].data[0].time.toString()}
+                            autoCompleteType='off'
+                            placeholder='  '
+                            autoCorrect={false}
+                            />
+                            <Line1/>
+                        </View>
+                        <Text style={styles.text}>분</Text>
+                    </View>
+                    </View>
             </View>
         )
     }
@@ -649,7 +674,11 @@ const Workout = ({ route }) => {
                             color={COLORS.primary}
                             style={{transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }],marginRight:10}}
                         />
-                        <Text style={{fontFamily:'RobotoRegular',fontSize:SIZES.body3}}>무산소/유산소 변경</Text>
+                        {
+                            !isEnabled[index]?
+                            <Text style={{fontFamily:'RobotoRegular',fontSize:SIZES.body3}}>웨이트 트레이닝</Text>:
+                            <Text style={{fontFamily:'RobotoRegular',fontSize:SIZES.body3}}>유산소 운동</Text>
+                        }
                     </View>
                     <Switch
                         trackColor={{true:COLORS.primary}}
