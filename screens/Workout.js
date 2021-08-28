@@ -54,7 +54,7 @@ const Workout = ({ route }) => {
     const [bottomSheetOpened,setBottomSheetOpened] = useState(false)
     const [whichTag,setWhichTag] =useState(0)
 
-    const TagColors = ["#20C997", "#2E86DE","#23A6B3", "#FF7979", "#FACF7A", "#F0942B","#D4003C","#7B46EA"]
+    const TagColors = ["#B54B4B", "#DB6E15","#CC8042", "#FBBB0D", "#E6BA35", "#97D53F","#6A8B3A","#3A8B46","#3A8B86","#32BAB2","#3790C9","#576BCF","#7A5ACB","#B25ACB","#CB5A97"]
 
     const [tagCustomize,setTagCustomize] = useState({
         name:'',
@@ -354,13 +354,13 @@ const Workout = ({ route }) => {
     function renderfirstSection (){
         return(
             <View>
-                <View style={{flexDirection:'row', marginTop:SIZES.padding2, marginLeft:'1%'}}>
+                <View horizontal={true} style={styles.alltag}>
                     {
                         TagColors.map((d,i)=>(
                             <TouchableOpacity key={i} onPress={()=>{
                                 setTagCustomize({name:tagCustomize.name,color:d})
                             }}>
-                                <View style={{marginRight:SIZES.padding2,borderRadius:35, backgroundColor:d, width:SIZES.h2,height:SIZES.h2}}></View>
+                                <View style={[styles.alltagcolor,{backgroundColor:d}]}></View>
                             </TouchableOpacity>
                         ))
                     }
@@ -414,13 +414,13 @@ const Workout = ({ route }) => {
                         </TouchableOpacity>
                     ))}
                 </ScrollView>
-                <View style={{flexDirection:'row', marginTop:SIZES.padding2,marginLeft:'1%'}}>
+                <View style={styles.alltag}>
                     {
                         TagColors.map((d,i)=>(
                             <TouchableOpacity key={i} onPress={()=>{
                                 setTagUpdate({name:tagUpdate.name,color:d,index:tagUpdate.index})
                             }}>
-                                <View style={{marginRight:SIZES.padding2,borderRadius:35, backgroundColor:d, width:SIZES.h2,height:SIZES.h2}}></View>
+                                <View style={[styles.alltagcolor,{backgroundColor:d}]}></View>
                             </TouchableOpacity>
                         ))
                     }
@@ -997,6 +997,20 @@ const styles = StyleSheet.create({
         margin:5,
         paddingHorizontal:10,
         justifyContent:'center'
+    },
+    alltag:{
+        flexDirection:'row',
+        marginTop:SIZES.padding2,
+        marginLeft:'1%',
+        flexWrap:'wrap',
+        justifyContent:'center'
+    },
+    alltagcolor:{
+        marginVertical:5,
+        marginRight:SIZES.padding2,
+        borderRadius:35,
+        width:SIZES.h2,
+        height:SIZES.h2
     }
 })
 
