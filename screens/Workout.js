@@ -224,11 +224,36 @@ const Workout = ({ route }) => {
 
     //flag =>1 일 경우 rep 조절, 0일 경우 kg 조절
     function handleLeftButtonPressed(index,innerindex,number,flag){
-        console.log(index,innerindex,number,flag)
+        let temp = [...DATA]
+    
+        if(flag === 1){    
+            let result = Number(temp[index].data[innerindex].rep) - number
+            if(result <= 0){
+                result = 0
+            }
+            temp[index].data[innerindex] = {...temp[index].data[innerindex], rep: result};
+            setDATA(temp)
+        }else{
+            let result = Number(temp[index].data[innerindex].weight) - number
+            if(result <= 0){
+                result = 0
+            }
+            temp[index].data[innerindex] = {...temp[index].data[innerindex], weight: result};
+            setDATA(temp)
+        }
     }
 
     function handleRightButtonPressed(index,innerindex,number,flag){
         console.log(index,innerindex,number,flag)
+        if(flag === 1){
+            let temp = [...DATA]
+            temp[index].data[innerindex] = {...temp[index].data[innerindex], rep: Number(temp[index].data[innerindex].rep) + number};
+            setDATA(temp)
+        }else{
+            let temp = [...DATA]
+            temp[index].data[innerindex] = {...temp[index].data[innerindex], weight: Number(temp[index].data[innerindex].weight) + number};
+            setDATA(temp)
+        }
     }
     // 태그를 새로 만드는 함수
     // db에 수정된 데이터 upload
