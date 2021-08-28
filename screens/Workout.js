@@ -12,8 +12,17 @@ import Animated, { color } from 'react-native-reanimated';
 import BottomSheet from 'reanimated-bottom-sheet';
 
 const Workout = ({ route }) => {
-    const [isEnabled, setIsEnabled] = useState(false);
-    const toggleSwitch = () => setIsEnabled(previousState => !previousState);
+    const [isEnabled, setIsEnabled] = useState([false]);
+    const toggleSwitch = (index) => {
+        // 해당 index의 스위치의 isEnabled - true false를 전환
+        console.log(index)
+
+        let temp = [...isEnabled];
+        temp[index] = !temp[index]
+        setIsEnabled(temp)
+    }
+    
+
     const [bottomSheetOpened,setBottomSheetOpened] = useState(false)
     const [whichTag,setWhichTag] =useState(0)
 
@@ -70,8 +79,8 @@ const Workout = ({ route }) => {
     //     }
     //   ])
 
-    function fetchData(){
-        // get data from local storage
+    function fetchData(itemId){
+        // local에서 DATA 가져와서 넣기
         console.log('fetchData')
     }
 
@@ -93,6 +102,12 @@ const Workout = ({ route }) => {
             console.log('Workout Page 언마운트')
         }
     }, []);
+
+    // useEffect(()=>{
+    //     //DATA 길이가 변경되었을 경우 실행 - 토글 어디에 붙일지 모르니까 인덱싱 작업 필요
+    //     if(DATA.LE)
+
+    // },[DATA])
 
     function handleTagAdd(index){
         // 체크해서 이미 있으면 아무것도 안함.
@@ -214,6 +229,12 @@ const Workout = ({ route }) => {
             console.log(res)
 
             setDATA(res)
+            
+            // 토글도 새로 만들어 주자
+            let toggle = [...isEnabled];
+            toggle[index+1] = false
+            setIsEnabled(toggle)
+
             return true
         }else{
             return false
@@ -343,21 +364,22 @@ const Workout = ({ route }) => {
     }
 
     const renderbottomsheet = () => (
-        <View style={styles.tagContainer}>
-            {/* <View style={styles.rowcontainer}>
-                <View></View>
+        <ScrollView style={styles.tagContainer}>
+            <View style={styles.rowcontainer}>
+                <View>
+                    <Text style={{ fontSize:SIZES.h4,fontFamily:'RobotoRegular'}}>태그 관리</Text>
+                </View>
                 <TouchableOpacity onPress={()=>{
                     setBottomSheetOpened(false)
                     TagSheet.current.snapTo(1)
                 }}>
                     <FontAwesome
-                        name="check"
-                        color={COLORS.primary}
+                        name="times"
                         style={{transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }]}}
                     />
                 </TouchableOpacity>
-            </View> */}
-            <View style={{marginBottom:20}}>
+            </View>
+            <View style={styles.tagTitleContainer}>
                 <Text style={styles.title}>태그 목록</Text>
                 <Line3/>
                 <ScrollView style={{paddingTop:SIZES.padding2}} horizontal={true}>  
@@ -375,7 +397,7 @@ const Workout = ({ route }) => {
             <View style={styles.tagTitleContainer}>
                 <Text style={styles.title}>선택된 태그</Text>
                 <Line3/>
-                <View style={{flexDirection:'row',paddingTop:SIZES.padding2}}>
+                <ScrollView horizontal={true} style={{flexDirection:'row',paddingTop:SIZES.padding2}}>
                 {
                     DATA[whichTag].tag.map((d,i)=>(
                         <TouchableOpacity key={i} onPress={()=>{
@@ -385,7 +407,7 @@ const Workout = ({ route }) => {
                         </TouchableOpacity>
                     ))
                 }
-                </View>
+                </ScrollView>
             </View>
 
             <View style={styles.tagTitleContainer}>
@@ -446,7 +468,8 @@ const Workout = ({ route }) => {
                     <View></View>
                 }
             </View>
-        </View>
+            <View style={{height:350}}></View>
+        </ScrollView>
     )
     
     const TagSheet = React.useRef(null);
@@ -456,20 +479,18 @@ const Workout = ({ route }) => {
             <View key={innerindex} style={styles.rowcontainer}>
                 <View style={{flexDirection:'row', alignItems:'center'}}>
                     <FontAwesome
-                    name="arrow-right"
-                    color={COLORS.gray}
-                    style={{transform: [{ scaleX: 1 }, { scaleY: 1 }]}}
+                    name="angle-down"
+                    style={{transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }]}}
                     />
                     <Text style={[styles.text,{marginLeft:SIZES.padding2*2}]}>{innerindex + 1}세트</Text>
                 </View>
-                <View style={{flexDirection:'row'}}>
-                    <View style={{alignItems:'center',marginRight:SIZES.padding}}>
+                <View style={{flexDirection:'row', alignItems:'center'}}>
+                    <View style={{alignItems:'center'}}>
                     <TextInput
                         keyboardType='numeric'
                         style={{ fontSize:SIZES.body4,fontFamily:'RobotoBold'}}
                         onChangeText={(event)=>handleWeight(event,innerindex,index)}
                         value={DATA[index].data[innerindex].weight.toString()}
-                        // onEndEditing={()=>onEndEditing()}
                         autoCompleteType='off'
                         placeholder='  '
                         autoCorrect={false}
@@ -478,28 +499,26 @@ const Workout = ({ route }) => {
                     </View>
                     <Text style={styles.text}>kg</Text>
                 </View>
-                <View style={{flexDirection:'row'}}>
-                    <View style={{alignItems:'center',marginRight:SIZES.padding}}>
-                    <TextInput
-                        keyboardType='numeric'
-                        style={{ fontSize:SIZES.body4,fontFamily:'RobotoBold'}}
-                        onChangeText={(event)=>handleReps(event,innerindex,index)}
-                        value={DATA[index].data[innerindex].rep.toString()}
-                        // onEndEditing={()=>onEndEditing()}
-                        autoCompleteType='off'
-                        placeholder='  '
-                        autoCorrect={false}
-                    />
-                    <Line1/>
+                <View style={{flexDirection:'row', alignItems:'center'}}>
+                    <View style={{alignItems:'center'}}>
+                        <TextInput
+                            keyboardType='numeric'
+                            style={{ fontSize:SIZES.body4,fontFamily:'RobotoBold'}}
+                            onChangeText={(event)=>handleReps(event,innerindex,index)}
+                            value={DATA[index].data[innerindex].rep.toString()}
+                            autoCompleteType='off'
+                            placeholder='  '
+                            autoCorrect={false}
+                        />
+                        <Line1/>
                     </View>
-                    <Text style={styles.text}>회</Text>
+                    <Text style={[styles.text,{marginTop:4}]}>회</Text>
                 </View>
                 <TouchableOpacity style={{marginRight:SIZES.padding}} onPress={()=>{
                     delSets(index,innerindex)
                 }}>
                     <FontAwesome
                     name="minus"
-                    color={COLORS.gray}
                     style={{transform: [{ scaleX: 1 }, { scaleY: 1 }]}}
                     />
                 </TouchableOpacity>
@@ -519,9 +538,34 @@ const Workout = ({ route }) => {
         )
     }
 
-    //1,0 ok
-    //2,0 not ok
-    //2,1 ok
+    function renderAerobic(index){
+        return(
+            <View>
+                <Text>유산소운동</Text>
+            </View>
+        )
+    }
+
+    function renderAddSets(index){
+        return(
+            <View style={{flexDirection:'row', alignItems:'center',marginTop:SIZES.padding}}>
+                <TouchableOpacity onPress={()=>{
+                    addSets(index)
+                }}>
+                    <FontAwesome
+                        name="plus"
+                        color={COLORS.primary}
+                        style={{transform: [{ scaleX: 1.2 }, { scaleY: 1.2 }]}}
+                    />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={()=>{
+                    addSets(index)
+                }}>
+                    <Text style={{marginLeft:SIZES.padding2*2,fontSize:SIZES.body3,fontFamily:'RobotoRegular',color:'#C4C4C6'}}>세트추가</Text>
+                </TouchableOpacity>
+            </View>
+        )
+    }
 
     function checkandRender(index) {
         if(DATA.length - index <= 1){
@@ -605,34 +649,25 @@ const Workout = ({ route }) => {
                             color={COLORS.primary}
                             style={{transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }],marginRight:10}}
                         />
-                        <Text style={{fontFamily:'RobotoRegular',fontSize:SIZES.body3}}>고급기능</Text>
+                        <Text style={{fontFamily:'RobotoRegular',fontSize:SIZES.body3}}>무산소/유산소 변경</Text>
                     </View>
                     <Switch
                         trackColor={{true:COLORS.primary}}
-                        onValueChange={()=>toggleSwitch()}
-                        value={isEnabled}
-                        style={{transform: [{ scaleX: .8 }, { scaleY: .8 }]}}
+                        onValueChange={()=>toggleSwitch(index)}
+                        value={isEnabled[index]}
+                        style={{transform: [{ scaleX: .7 }, { scaleY: .7 }]}}
                     />
                 </View>
-                {
-                    DATA[index].data.map((item,innerindex)=>rendersets(item,innerindex,index))
+                {   
+                    !isEnabled[index]?
+                    DATA[index].data.map((item,innerindex)=>rendersets(item,innerindex,index)):
+                    renderAerobic(index)
                 }
-                <View style={{flexDirection:'row', alignItems:'center',marginTop:SIZES.padding}}>
-                    <TouchableOpacity onPress={()=>{
-                        addSets(index)
-                    }}>
-                        <FontAwesome
-                            name="plus"
-                            color={COLORS.primary}
-                            style={{transform: [{ scaleX: 1.2 }, { scaleY: 1.2 }]}}
-                        />
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={()=>{
-                        addSets(index)
-                    }}>
-                        <Text style={{marginLeft:SIZES.padding2*2,fontSize:SIZES.body3,fontFamily:'RobotoRegular',color:'#C4C4C6'}}>세트추가</Text>
-                    </TouchableOpacity>
-                </View>
+                {
+                    !isEnabled[index]?
+                    renderAddSets(index):
+                    <></>
+                }
             </View>
             <View  style={{marginBottom:20}}/>
             {
@@ -721,6 +756,7 @@ const styles = StyleSheet.create({
         fontSize: SIZES.body3,
         fontFamily: 'RobotoMedium',
         paddingRight: SIZES.base,
+        paddingBottom:10
     },
     text:{
         fontFamily:'RobotoRegular',
@@ -732,8 +768,8 @@ const styles = StyleSheet.create({
         height: 680,
     },
     tagTitleContainer:{
-        marginTop:20,
-        marginBottom:20
+        marginTop:12,
+        marginBottom:12
     }
 })
 
