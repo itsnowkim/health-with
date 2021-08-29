@@ -23,18 +23,7 @@ export const COLORS = {
 
   //iPhone color
   blue: "#007AFF",
-  skyBlue: "#1479FF",
-
-  //TAG COLORS
-  tag_red: "#D4003C",
-  tag_pink: "#FF7979",
-  tag_purple: "#7B46EA",
-  tag_blue: "#2E86DE",
-  tag_green: "#20C997",
-  tag_yellow: "#FACF7A",
-  tag_orange: "#F0942B",
-  tag_gray: "#95AFC0",
-  tag_darkblue: "#23A6B3"
+  skyBlue: "#1479FF"
 };
 
 export const SIZES = {

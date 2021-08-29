@@ -2,7 +2,7 @@ import React, {useEffect, useState} from "react";
 import { StyleSheet, View, Text, FlatList, Button, ScrollView, TouchableOpacity} from "react-native";
 import { COLORS, SIZES } from "../constants";
 
-const Tag = ({name,color, onPress}) => {
+const Tag = ({name,color}) => {
         return(
             <View style={styles.container}>
                 <View style={{backgroundColor:color, borderRadius:SIZES.radius,height:23,justifyContent:'center',padding:2}}>

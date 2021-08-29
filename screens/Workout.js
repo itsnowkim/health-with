@@ -79,10 +79,10 @@ const Workout = ({ route }) => {
         }
     ])
     const [AllTag,setAllTag] = useState([
-        {name:'등',color:COLORS.tag_darkblue,id:1},
-        {name:'가슴',color:COLORS.tag_green,id:2},
-        {name:'어깨',color:COLORS.tag_pink,id:3},
-        {name:'하체',color:COLORS.tag_purple,id:4}
+        {name:'등',color:'#FBBB0D',id:1},
+        {name:'가슴',color:'#3A8B86',id:2},
+        {name:'어깨',color:'#CB5A97',id:3},
+        {name:'하체',color:'#7A5ACB',id:4}
     ])
     // const [DATA, setDATA] = useState([
     //     {
