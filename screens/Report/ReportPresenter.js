@@ -75,7 +75,9 @@ export default ({
           {
             page == 0 && tags && tags.map((tag) => 
               (
-              <Tag key={tag.id} name={tag.name} color={tag.name == selectedTag ? tag.color : COLORS.tag_gray} onPress={onPressTagHandler} />
+                <TouchableOpacity key={tag.id} onPress={() => onPressTagHandler(tag.name)}>
+                  <Tag key={tag.id} name={tag.name} color={tag.name == selectedTag ? tag.color : COLORS.tag_gray} />
+                </TouchableOpacity>
             ))
           }
         </View>
