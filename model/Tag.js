@@ -18,6 +18,7 @@ export default class Tag extends BaseModel {
     return {
       id: { type: types.INTEGER, primary_key: true },
       name: { type: types.TEXT, not_null: true },
+      color: { type: types.TEXT, not_null: true}
     }
   }
 }

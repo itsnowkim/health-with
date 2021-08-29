@@ -11,13 +11,13 @@ export default class Set extends BaseModel {
   }
 
   static get tableName() {
-    return 'set'
+    return 'sets'
   }
 
   static get columnMapping() {
     return {
       id: { type: types.INTEGER, primary_key: true },
-      weight: { type: types.INTEGER },
+      weight: { type: types.FLOAT },
       rep: { type: types.INTEGER },
       time: { type: types.INTEGER },
     }

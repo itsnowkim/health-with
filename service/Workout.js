@@ -8,6 +8,9 @@ export const createWorkout = async (date) => {
   await workout.save()
 }
 
-export const getWorkout = async () => {
-  return Workout.query()
+export const getWorkout = async ({setWorkouts}) => {
+  workouts = await Workout.query()
+  console.log(workouts)
+  setWorkouts(workouts)
+  return workouts
 }
