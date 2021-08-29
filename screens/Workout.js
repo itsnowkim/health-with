@@ -58,11 +58,13 @@ const Workout = ({ route }) => {
 
     const [tagCustomize,setTagCustomize] = useState({
         name:'',
-        color:'#20C997'
+        color:'#B54B4B',
+        id:0
     })
     const [tagUpdate,setTagUpdate] = useState({
         name: '',
         color: '',
+        id:0,
         index: null
     })
     const [firstAngle,setFirstAngle] = useState(false)
@@ -72,15 +74,15 @@ const Workout = ({ route }) => {
     const [DATA,setDATA] = useState([
         {
             title:'',
-            tag:[{name:'',color:''}],
+            tag:[{name:'',color:'',id:''}],
             data:[{rep:'',weight:'',time:''}]
         }
     ])
     const [AllTag,setAllTag] = useState([
-        {name:'등',color:COLORS.tag_darkblue},
-        {name:'가슴',color:COLORS.tag_green},
-        {name:'어깨',color:COLORS.tag_pink},
-        {name:'하체',color:COLORS.tag_purple}
+        {name:'등',color:COLORS.tag_darkblue,id:1},
+        {name:'가슴',color:COLORS.tag_green,id:2},
+        {name:'어깨',color:COLORS.tag_pink,id:3},
+        {name:'하체',color:COLORS.tag_purple,id:4}
     ])
     // const [DATA, setDATA] = useState([
     //     {
@@ -138,6 +140,7 @@ const Workout = ({ route }) => {
     // },[DATA])
 
     function handleTagAdd(index){
+        console.log(AllTag)
         // 체크해서 이미 있으면 아무것도 안함.
         let color = AllTag[index].color
         let name = AllTag[index].name
@@ -146,7 +149,7 @@ const Workout = ({ route }) => {
 
         let istrue = false
         temp[whichTag].tag.map((i,j)=>{
-            if(i.name === name){
+            if(i.id === AllTag[index].id){
                 istrue = true
             }
         })
@@ -155,12 +158,12 @@ const Workout = ({ route }) => {
         if(!istrue){
             //문제 없음
             if(temp[whichTag].tag.length === 0){
-                temp[whichTag].tag = [...temp[whichTag].tag,{color:color,name:name}]
+                temp[whichTag].tag = [...temp[whichTag].tag,{color:color,name:name,id:AllTag[index].id}]
             }else{
                 if(temp[whichTag].tag[0].name===''){
-                    temp[whichTag].tag[0] = {...temp[whichTag].tag[index], color:color,name:name};
+                    temp[whichTag].tag[0] = {...temp[whichTag].tag[index], color:color,name:name,id:AllTag[index].id};
                 }else{
-                    temp[whichTag].tag = [...temp[whichTag].tag,{color:color,name:name}]
+                    temp[whichTag].tag = [...temp[whichTag].tag,{color:color,name:name,id:AllTag[index].id}]
                 }
             }
             setDATA(temp)
@@ -194,13 +197,29 @@ const Workout = ({ route }) => {
     function updateTagCustom(){
         if(tagUpdate.name !== ''){
             let temp = [...AllTag];
-            temp[tagUpdate.index] = {...temp[tagUpdate.index], name:tagUpdate.name,color:tagUpdate.color}
-            //console.log(temp)
+            temp[tagUpdate.index] = {...temp[tagUpdate.index], name:tagUpdate.name,color:tagUpdate.color,id:tagUpdate.id}
             setAllTag(temp)
+            // db에 있는 태그 테이블에 변경된 점 반영.
+            // 이미 등록된 태그도 같이 변경해 주어야 함.
+            let addedTag = [...DATA];
+
+            addedTag.map((data,index)=>{
+                data.tag.map((t,j)=>{
+                    if(t.id === tagUpdate.id){
+                        addedTag[index].tag[j] = {
+                            name:tagUpdate.name,
+                            color:tagUpdate.color,
+                            id:tagUpdate.id
+                        }
+                    }
+                })
+            })
+            setDATA(addedTag)
         }
     }
     function handleTagCustomizeAdd(event,color){
-        setTagCustomize({name:event,color:color})
+        const id = AllTag.length+1
+        setTagCustomize({name:event,color:color,id:id})
     }
 
     function delSets(index,innerindex){
@@ -271,16 +290,16 @@ const Workout = ({ route }) => {
         }
     }
     // 태그를 새로 만드는 함수
-    // db에 수정된 데이터 upload
     //setAllTag()에 수정된 데이터 push
     function addNewTag(){
         if(tagCustomize.name !== ''){
-            setAllTag(prevArr => [...prevArr,{name:tagCustomize.name,color:tagCustomize.color}])
-            setTagCustomize({name:'',color:'#20C997'})
+            setAllTag(prevArr => [...prevArr,{name:tagCustomize.name,color:tagCustomize.color,id:tagCustomize.id}])
+            setTagCustomize({name:'',color:'#B54B4B'})
+            // db에 수정된 데이터 upload
         }
     }
     function handleTagCustomizeUpdate(event,color){
-        setTagUpdate({name:event,color:color,index:tagUpdate.index})
+        setTagUpdate({name:event,color:color,index:tagUpdate.index,id:tagUpdate.id})
     }
     function checkform(index){
         if(DATA[index].title !== ''){
@@ -358,7 +377,7 @@ const Workout = ({ route }) => {
                     {
                         TagColors.map((d,i)=>(
                             <TouchableOpacity key={i} onPress={()=>{
-                                setTagCustomize({name:tagCustomize.name,color:d})
+                                setTagCustomize({name:tagCustomize.name,color:d,id:tagCustomize.id})
                             }}>
                                 <View style={[styles.alltagcolor,{backgroundColor:d}]}></View>
                             </TouchableOpacity>
@@ -408,7 +427,7 @@ const Workout = ({ route }) => {
                     {
                     AllTag.map((d,i)=>(
                         <TouchableOpacity key={i} onPress={()=>{
-                            setTagUpdate({name:d.name,color:d.color,index:i})
+                            setTagUpdate({name:d.name,color:d.color,id:d.id,index:i})
                         }}>
                             <Tag name={d.name} color={d.color}></Tag>
                         </TouchableOpacity>
@@ -418,7 +437,7 @@ const Workout = ({ route }) => {
                     {
                         TagColors.map((d,i)=>(
                             <TouchableOpacity key={i} onPress={()=>{
-                                setTagUpdate({name:tagUpdate.name,color:d,index:tagUpdate.index})
+                                setTagUpdate({name:tagUpdate.name,color:d,id:tagUpdate.id,index:tagUpdate.index})
                             }}>
                                 <View style={[styles.alltagcolor,{backgroundColor:d}]}></View>
                             </TouchableOpacity>
