@@ -4,16 +4,11 @@ import { COLORS, SIZES } from "../constants";
 
 const Tag = ({name,color, onPress}) => {
         return(
-<<<<<<< HEAD
             <View style={styles.container}>
                 <View style={{backgroundColor:color, borderRadius:SIZES.radius,height:23,justifyContent:'center',padding:2}}>
-=======
-            <TouchableOpacity style={styles.container} onPress={() => onPress(name)}>
-                <View style={{backgroundColor:color, borderRadius:SIZES.radius}}>
->>>>>>> 2f5b955879b6603d83f1feef0b994fc25acbd41e
                     <Text style={styles.tag}>{name}</Text>
                 </View>
-            </TouchableOpacity>
+            </View>
     )
 }
 
