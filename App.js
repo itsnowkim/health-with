@@ -42,15 +42,15 @@ function getHeaderTitle(route) {
 
 const App = () => {
   //copy .db file
-  useEffect(() => {
-    const copyDB = async () => {
-      await FileSystem.downloadAsync(
-        Asset.fromModule(require('./db/testDB.db')).uri,
-        FileSystem.documentDirectory + 'SQLite/testDB.db'
-      )
-    }
-    copyDB();
-  }, [])
+  // useEffect(() => {
+  //   const copyDB = async () => {
+  //     await FileSystem.downloadAsync(
+  //       Asset.fromModule(require('./db/testDB.db')).uri,
+  //       FileSystem.documentDirectory + 'SQLite/testDB.db'
+  //     )
+  //   }
+  //   copyDB();
+  // }, [])
 
   // key name으로 fontfaily 적용가능.
   const [loaded] = useFonts({

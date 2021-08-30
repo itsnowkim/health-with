@@ -84,30 +84,6 @@ const Workout = ({ route }) => {
         {name:'어깨',color:'#CB5A97',id:3},
         {name:'하체',color:'#7A5ACB',id:4}
     ])
-    // const [DATA, setDATA] = useState([
-    //     {
-    //       title: '랫풀다운',
-    //       tag: [{name:'등',color:COLORS.tag_darkblue}],
-    //       data: [
-    //         {rep: 10, weight: 40, time: null},
-    //         {rep: 10, weight: 40, time: null},
-    //         {rep: 10, weight: 40, time: null},
-    //         {rep: 10, weight: 40, time: null},
-    //         {rep: 10, weight: 40, time: null}
-    //       ]
-    //     },
-    //     {
-    //       title: '데드리프트',
-    //       tag: [{name:'등',color:COLORS.tag_darkblue},{name:'하체',color:COLORS.tag_purple}],
-    //       data: [
-    //         {rep: 10, weight: 80, time: null},
-    //         {rep: 10, weight: 80, time: null},
-    //         {rep: 10, weight: 80, time: null},
-    //         {rep: 10, weight: 80, time: null},
-    //         {rep: 10, weight: 100, time: null},
-    //       ]
-    //     }
-    //   ])
 
     function fetchData(itemId){
         // local에서 DATA 가져와서 넣기
@@ -117,7 +93,7 @@ const Workout = ({ route }) => {
     useEffect(()=> {
         // 처음 마운트 되었을 때 넘어온 id로 local storage에서 get.
         const {itemId} = route.params;
-        //console.log(itemId)
+        console.log(itemId)
 
         if (itemId === 2){
             // no item id, 새로 작성하는 경우
@@ -129,6 +105,7 @@ const Workout = ({ route }) => {
         }
         // 화면을 나갈 때 변경사항이 있는지 체크(저장할 경우 data가 바뀌므로)
         return () => {
+            
             console.log('Workout Page 언마운트')
         }
     }, []);
