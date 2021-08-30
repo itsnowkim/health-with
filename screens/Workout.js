@@ -11,7 +11,15 @@ import { FontAwesome } from '@expo/vector-icons';
 import Animated, { color } from 'react-native-reanimated';
 import BottomSheet from 'reanimated-bottom-sheet';
 
+//db
+import DatabaseLayer from 'expo-sqlite-orm/src/DatabaseLayer'
+import * as SQLite from 'expo-sqlite'
+import { GET_ALL_BY_WORKOUT_ID } from "./Report/ReportQueries";
+import { getDATAfromDB } from "../util/getDATAfromDB";
+
 const Workout = ({ route }) => {
+    const [loaded,setLoaded] = useState(false);
+
     const [isEnabled, setIsEnabled] = useState([false]);
     const toggleSwitch = (index) => {
         let temp = [...isEnabled];
@@ -39,9 +47,8 @@ const Workout = ({ route }) => {
     }
 
     // angledown, angleup 판단하는 state - DATA.data 개수만큼 true,false 있어야 함
-    const [isPressed, setIsPressed] = useState([{
-        data:[false]
-    }])
+    const [isPressed, setIsPressed] = useState(null)
+
     const togglePressed = (index,innerindex) => {
         let temp = [...isPressed];
         console.log(index,innerindex)
@@ -87,7 +94,28 @@ const Workout = ({ route }) => {
 
     function fetchData(itemId){
         // local에서 DATA 가져와서 넣기
-        console.log('fetchData')
+        const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('testDB.db'))
+        databaseLayer.executeSql(GET_ALL_BY_WORKOUT_ID+`WHERE workout.id=${itemId}`)
+        .then((response) => {
+            const responseList = response.rows
+            let temp = getDATAfromDB(responseList)
+            setDATA(temp)
+            
+            // angledown, angleup 판단하는 state - DATA.data 개수만큼 true,false 있어야 함
+            let pressedlist = []       
+            temp.map((i,idx)=>{
+                let aaa = {data:[]}
+                pressedlist.push(aaa)
+                i.data.map((j)=>{
+                    pressedlist[idx].data.push(false)
+                })
+            })
+            console.log('jjjjjjjj')
+            setIsPressed(pressedlist)
+        })
+        .catch((err) => {
+            console.log(err)
+        })
     }
 
     useEffect(()=> {
@@ -95,7 +123,7 @@ const Workout = ({ route }) => {
         const {itemId} = route.params;
         console.log(itemId)
 
-        if (itemId === 2){
+        if (itemId === 0){
             // no item id, 새로 작성하는 경우
             console.log('생성')
         }else{
@@ -105,16 +133,10 @@ const Workout = ({ route }) => {
         }
         // 화면을 나갈 때 변경사항이 있는지 체크(저장할 경우 data가 바뀌므로)
         return () => {
-            
+            setIsPressed(null)
             console.log('Workout Page 언마운트')
         }
     }, []);
-
-    // useEffect(()=>{
-    //     //DATA 길이가 변경되었을 경우 실행 - 토글 어디에 붙일지 모르니까 인덱싱 작업 필요
-    //     if(DATA.LE)
-
-    // },[DATA])
 
     function handleTagAdd(index){
         console.log(AllTag)
@@ -282,6 +304,13 @@ const Workout = ({ route }) => {
         if(DATA[index].title !== ''){
             return true
         }else{
+            // data가 있을 경우는 setisPressed안에 초기값 넣고
+            // data가 없을 때는 아무것도 안함
+            if(route.params.itemId === 0){
+                if(!isPressed){
+                    setIsPressed([{data:[false]}])
+                }
+            }
             return false
         }
     }
@@ -629,6 +658,7 @@ const Workout = ({ route }) => {
     }
 
     function rendersets(item,innerindex,index){
+        console.log(isPressed)
         return(
             <View key={innerindex}>
             <View style={styles.rowcontainer}>
@@ -637,9 +667,11 @@ const Workout = ({ route }) => {
                     }}>
                     <View style={{flexDirection:'row', alignItems:'center'}}>
                         {
-                            isPressed[index].data[innerindex]?
+                            isPressed&&isPressed[index].data[innerindex]&&
                             <FontAwesome name="angle-up" color={COLORS.primary} style={{transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }]}}/>
-                            :
+                        }
+                        {
+                            isPressed&&!isPressed[index].data[innerindex]&&
                             <FontAwesome name="angle-down" style={{transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }]}}/>
                         }
                         <Text style={[styles.text,{marginLeft:SIZES.padding2*2}]}>{innerindex + 1}세트</Text>
@@ -689,10 +721,8 @@ const Workout = ({ route }) => {
                 </TouchableOpacity>
             </View>
             {
-                isPressed[index].data[innerindex]?
+                isPressed&&isPressed[index].data[innerindex]&&
                 renderAnglePressedForm(index,innerindex)
-                :
-                <></>
             }
             </View>
         )
@@ -892,7 +922,9 @@ const Workout = ({ route }) => {
             {renderHeader(index)}
             {
                 checkform(index)?
-                renderBody(index):
+                (<>{
+                  isPressed&&renderBody(index)
+                }</>):
                 <View/>
             }
             </View>

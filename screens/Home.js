@@ -18,6 +18,7 @@ import Session from "../model/Session";
 import DatabaseLayer from 'expo-sqlite-orm/src/DatabaseLayer'
 import * as SQLite from 'expo-sqlite'
 import { GET_ALL_BY_WORKOUT_ID } from "./Report/ReportQueries";
+import { getDATAfromDB } from "../util/getDATAfromDB";
 
 
 const Home = ( {navigation} ) => {
@@ -37,39 +38,11 @@ const Home = ( {navigation} ) => {
     dateString: selectedDate.dateString
   })
 
-  // 임시
-  const [sessionTitle,setSessionTitle] = useState([
-      {
-        title: '랫풀다운',
-        tag: [{name:'등',color:'#FBBB0D'}],
-      },
-      {
-        title: '데드리프트',
-        tag: [{name:'등',color:'#FBBB0D'},{name:'하체',color:'#7A5ACB'}],
-      }
-    
-  ])
-
-  const [sessionBody, setSessionBody] = useState([
+  const [DATA,setDATA] = useState([
     {
-      title: '랫풀다운',
-      data: [
-        {rep: 10, weight: 40, time: null},
-        {rep: 10, weight: 40, time: null},
-        {rep: 10, weight: 40, time: null},
-        {rep: 10, weight: 40, time: null},
-        {rep: 10, weight: 40, time: null}
-      ]
-    },
-    {
-      title: '데드리프트',
-      data: [
-        {rep: 10, weight: 80, time: null},
-        {rep: 10, weight: 80, time: null},
-        {rep: 10, weight: 80, time: null},
-        {rep: 10, weight: 80, time: null},
-        {rep: 10, weight: 100, time: null},
-      ]
+        title:'',
+        tag:[{name:'',color:'',id:''}],
+        data:[{rep:'',weight:'',time:''}]
     }
   ])
 
@@ -107,54 +80,24 @@ const Home = ( {navigation} ) => {
       // props에 해당하는 workout id 찾기
       const setData = async () => {
         let res1 = await Workout.findBy({date_eq:props})
-
         if(res1 === null){
           setWorkout({id:0,dateString:props})
+          setSchedule(0)
         }else{
+          setSchedule(1)
           setWorkout(res1)
           // 세션 이름, 태그 + 세트 수까지 다 가져와야함
           const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('testDB.db'))
           databaseLayer.executeSql(GET_ALL_BY_WORKOUT_ID+`WHERE workout.id=${res1.id}`)
           .then((response) => {
-            let temp = []
             const responseList = response.rows
-            let index = 0
-            let innerindex = 0
-            responseList.map((data,idx) => {
-              if( idx === 0){
-                temp[idx] = {
-                  title:data.name,
-                  tag:[{id:data.tag_id, name:data.tag_name, color:data.color}],
-                  data:[{rep:data.rep, weight:data.weight, time:data.time, lb:data.lb}]
-                }
-              }else{
-                if(temp[index].title === data.name){
-                  if(temp[index].tag[0].id !== data.tag_id){
-                    if(temp[index].tag[innerindex].id !== data.tag_id){
-                      innerindex = innerindex +1;
-                      temp[index].tag[innerindex] = {id:data.tag_id, name:data.tag_name, color: data.color}
-                    }
-                  }else{
-                    temp[index].data.push({rep:data.rep, weight:data.weight, time:data.time, lb:data.lb})
-                  }
-                }else{
-                  index = index +1;
-                  innerindex = 0
-                  temp[index] = {
-                    title:data.name,
-                    tag:[{id:data.tag_id, name:data.tag_name, color: data.color}],
-                    data:[{rep:data.rep,weight:data.weight,time:data.time}]
-                  }
-                }
-              }
-            })
-            console.log(temp)
+            let temp = getDATAfromDB(responseList)
+            setDATA(temp)
           })
           .catch((err) => {
             console.log(err)
           })
         }
-        
       }
       setData()
     }
@@ -191,7 +134,6 @@ const Home = ( {navigation} ) => {
               backgroundColor={COLORS.transparent}
               color={COLORS.primary}
               size={SIZES.h2}
-              
             >
             </FontAwesome>
           </TouchableOpacity>
@@ -204,8 +146,7 @@ const Home = ( {navigation} ) => {
     return (
       <View style={{flex:1}}>
         <WorkoutCard
-          sessionTitle={sessionTitle}
-          sessionBody={sessionBody}
+          DATA={DATA}
         ></WorkoutCard>
       </View>
     )
