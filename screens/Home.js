@@ -116,10 +116,39 @@ const Home = ( {navigation} ) => {
           const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('testDB.db'))
           databaseLayer.executeSql(GET_ALL_BY_WORKOUT_ID+`WHERE workout.id=${res1.id}`)
           .then((response) => {
+            let temp = []
             const responseList = response.rows
-            responseList.map((data) => {
-              console.log(data)
+            let index = 0
+            let innerindex = 0
+            responseList.map((data,idx) => {
+              if( idx === 0){
+                temp[idx] = {
+                  title:data.name,
+                  tag:[{id:data.tag_id, name:data.tag_name, color:data.color}],
+                  data:[{rep:data.rep, weight:data.weight, time:data.time, lb:data.lb}]
+                }
+              }else{
+                if(temp[index].title === data.name){
+                  if(temp[index].tag[0].id !== data.tag_id){
+                    if(temp[index].tag[innerindex].id !== data.tag_id){
+                      innerindex = innerindex +1;
+                      temp[index].tag[innerindex] = {id:data.tag_id, name:data.tag_name, color: data.color}
+                    }
+                  }else{
+                    temp[index].data.push({rep:data.rep, weight:data.weight, time:data.time, lb:data.lb})
+                  }
+                }else{
+                  index = index +1;
+                  innerindex = 0
+                  temp[index] = {
+                    title:data.name,
+                    tag:[{id:data.tag_id, name:data.tag_name, color: data.color}],
+                    data:[{rep:data.rep,weight:data.weight,time:data.time}]
+                  }
+                }
+              }
             })
+            console.log(temp)
           })
           .catch((err) => {
             console.log(err)
