@@ -143,12 +143,14 @@ const Home = ( {navigation} ) => {
   }
 
   function renderSchedule() {
-    return (
+    return (<>
       <View style={{flex:1}}>
         <WorkoutCard
           DATA={DATA}
         ></WorkoutCard>
       </View>
+      <View style={{height:SIZES.height/3}}></View>
+      </>
     )
   }
 
