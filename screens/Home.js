@@ -7,6 +7,7 @@ import { COLORS, SIZES } from "../constants";
 import { FontAwesome } from '@expo/vector-icons';
 
 import WorkoutCard from "../components/WorkoutCard";
+import Line3 from "../components/Line3";
 
 //db
 import Workout from "../model/Workout";
@@ -119,6 +120,7 @@ const Home = ( {navigation} ) => {
         <CalendarBase
           setSelectedDate={setSelectedDate}
         />
+        <Line3/>
       </View>
     )
   }
@@ -183,7 +185,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.transparent,
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop:SIZES.padding2
+    marginTop:14
   },
   text: {
     fontSize: SIZES.h4,

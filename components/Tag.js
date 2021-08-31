@@ -5,7 +5,7 @@ import { COLORS, SIZES } from "../constants";
 const Tag = ({name,color}) => {
         return(
             <View style={styles.container}>
-                <View style={{backgroundColor:color, borderRadius:SIZES.radius,height:23,justifyContent:'center',padding:2}}>
+                <View style={{backgroundColor:color, borderRadius:SIZES.radius,justifyContent:'center',padding:2,alignItems:'center'}}>
                     <Text style={styles.tag}>{name}</Text>
                 </View>
             </View>
@@ -21,6 +21,7 @@ const styles = StyleSheet.create({
         fontSize:SIZES.body4,
         paddingRight:5,
         paddingLeft:5,
+        
     },
     container:{
         paddingLeft: SIZES.base/2

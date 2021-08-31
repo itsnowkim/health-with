@@ -399,8 +399,8 @@ const Workout = ({ route }) => {
                         ))
                     }
                 </View>
-                <View style={{marginTop:30}}>
-                    <View style={{flexDirection:'row',alignItems:'center', justifyContent:'space-around'}}>
+                <View style={{marginTop:10}}>
+                    <View style={{flexDirection:'row',alignItems:'center', justifyContent:'center'}}>
                         <TextInput
                             style={{ height:23, fontFamily:'RobotoBold',fontSize:SIZES.body4,color:COLORS.lightWhite,backgroundColor:tagCustomize.color,paddingRight:5,paddingLeft:5, borderRadius:SIZES.radius}}
                             onChangeText={(event)=>handleTagCustomizeAdd(event,tagCustomize.color)}
@@ -412,6 +412,7 @@ const Workout = ({ route }) => {
                             placeholderTextColor='#ffffff'
                         />
                         <TouchableOpacity
+                            style={{marginLeft:10}}
                             onPress={()=>{
                                 addNewTag()
                             }}
@@ -420,7 +421,7 @@ const Workout = ({ route }) => {
                                 tagCustomize.name !== ''?
                                 <FontAwesome
                                 name="check"
-                                color={COLORS.primary}
+                                color={'#404040'}
                                 style={{transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }],marginRight:20}}
                                 />:
                                 <FontAwesome
@@ -610,29 +611,29 @@ const Workout = ({ route }) => {
     function renderAnglePressedForm(index,innerindex){
         return(
             <View style={{flexDirection:'row', justifyContent:'space-around'}}>
-                <View style={{marginLeft:'22%'}}>
+                <View style={{marginLeft:'25%'}}>
                     <View style={{flexDirection:'row'}}>
                         <TouchableOpacity style={styles.leftbuttonContainer} onPress={()=>{
                             handleLeftButtonPressed(index,innerindex,1,0)
                         }}>
-                            <Text style={[styles.text,{color:COLORS.primary}]}>- 1</Text>
+                            <Text style={[styles.text,{color:'#404040'}]}>- 1</Text>
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.rightbuttonContainer} onPress={()=>{
                             handleRightButtonPressed(index,innerindex,1,0)
                         }}>
-                            <Text style={[styles.text,{color:'white'}]}>+1</Text>
+                            <Text style={[styles.text,{color:'#404040'}]}>+1</Text>
                         </TouchableOpacity>
                     </View>
                     <View style={{flexDirection:'row'}}>
                         <TouchableOpacity style={styles.leftbuttonContainer} onPress={()=>{
                             handleLeftButtonPressed(index,innerindex,5,0)
                         }}>
-                            <Text style={[styles.text,{color:COLORS.primary}]}>- 5</Text>
+                            <Text style={[styles.text,{color:'#404040'}]}>- 5</Text>
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.rightbuttonContainer} onPress={()=>{
                             handleRightButtonPressed(index,innerindex,5,0)
                         }}>
-                            <Text style={[styles.text,{color:'white'}]}>+5</Text>
+                            <Text style={[styles.text,{color:'#404040'}]}>+5</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -720,12 +721,12 @@ const Workout = ({ route }) => {
                     </View>
                     <Text style={[styles.text,{marginTop:4}]}>회</Text>
                 </View>
-                <TouchableOpacity style={{marginRight:SIZES.padding}} onPress={()=>{
+                <TouchableOpacity style={{marginRight:SIZES.padding,marginTop:1}} onPress={()=>{
                     delSets(index,innerindex)
                 }}>
                     <FontAwesome
                     name="minus"
-                    style={{transform: [{ scaleX: 1 }, { scaleY: 1 }]}}
+                    style={{transform: [{ scaleX: 1 }, { scaleY: 0.5 }]}}
                     />
                 </TouchableOpacity>
             </View>
@@ -878,8 +879,8 @@ const Workout = ({ route }) => {
                         />
                         {
                             !isEnabled[index]?
-                            <Text style={{fontFamily:'RobotoRegular',fontSize:SIZES.body3}}>웨이트 트레이닝</Text>:
-                            <Text style={{fontFamily:'RobotoRegular',fontSize:SIZES.body3}}>유산소 운동</Text>
+                            <Text style={{fontFamily:'RobotoRegular',fontSize:SIZES.body3}}>유산소</Text>:
+                            <Text style={{fontFamily:'RobotoRegular',fontSize:SIZES.body3}}>유산소</Text>
                         }
                     </View>
                     <Switch
@@ -1024,10 +1025,9 @@ const styles = StyleSheet.create({
         fontSize: SIZES.body3,
         fontFamily: 'RobotoMedium',
         paddingRight: SIZES.base,
-        paddingBottom:10
     },
     text:{
-        fontFamily:'RobotoRegular',
+        fontFamily:'RobotoThin',
         fontSize:SIZES.body3
     },
     tagContainer:{
@@ -1040,16 +1040,16 @@ const styles = StyleSheet.create({
         marginBottom:12
     },
     leftbuttonContainer:{
-        backgroundColor:COLORS.secondary,
+        backgroundColor:'#E9E9EB',
         borderRadius:SIZES.radius*3,
-        margin:5,
+        margin:3,
         paddingHorizontal:10,
         justifyContent:'center'
     },
     rightbuttonContainer:{
-        backgroundColor:COLORS.primary,
+        backgroundColor:'#E9E9EB',
         borderRadius:SIZES.radius*3,
-        margin:5,
+        margin:3,
         paddingHorizontal:10,
         justifyContent:'center'
     },

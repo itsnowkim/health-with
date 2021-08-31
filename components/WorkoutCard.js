@@ -16,7 +16,7 @@ const WorkoutCard = ({DATA}) => {
         return item.data.map((data,index)=>{
             //console.log(data)
             return(
-                <View key={index} style={{flexDirection:'row', justifyContent:'space-around'}}>
+                <View key={index} style={{flexDirection:'row',marginVertical:1, justifyContent:'space-around'}}>
                     <Text style={styles.text}>{index + 1}세트</Text>
                     {
                         data.lb?
@@ -64,7 +64,7 @@ export default WorkoutCard;
 const styles = StyleSheet.create({
     container: {
       flex: 1,
-      //marginTop: StatusBar.currentHeight || 0,
+      marginTop:10
     },
     item: {
       backgroundColor: COLORS.transparent,
@@ -74,12 +74,12 @@ const styles = StyleSheet.create({
       paddingTop:SIZES.base*2
     },
     title: {
-      fontSize: SIZES.body3,
+      fontSize: 15,
       fontFamily: 'RobotoMedium',
       paddingRight: SIZES.base
     },
     text: {
-        fontSize: SIZES.body3,
-        fontFamily: 'RobotoRegular'
+        fontSize: 15,
+        fontFamily: 'RobotoLight'
     }
   });
