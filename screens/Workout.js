@@ -110,7 +110,6 @@ const Workout = ({ route }) => {
                     pressedlist[idx].data.push(false)
                 })
             })
-            console.log('jjjjjjjj')
             setIsPressed(pressedlist)
         })
         .catch((err) => {
@@ -304,15 +303,25 @@ const Workout = ({ route }) => {
         if(DATA[index].title !== ''){
             return true
         }else{
-            // data가 있을 경우는 setisPressed안에 초기값 넣고
-            // data가 없을 때는 아무것도 안함
-            if(route.params.itemId === 0){
-                if(!isPressed){
-                    setIsPressed([{data:[false]}])
-                }
-            }
+            // data가 없을 경우는 setisPressed안에 초기값 넣고
+            // data가 있을 때는 아무것도 안함
+            // if(route.params.itemId === 0){
+            //     if(!isPressed){
+            //         setIsPressed([{data:[false]}])
+            //     }
+            // }
             return false
         }
+    }
+    function isRendered(){
+        // data가 없을 경우는 setisPressed안에 초기값 넣고
+        // data가 있을 때는 아무것도 안함
+        if(route.params.itemId === 0){
+            if(!isPressed){
+                setIsPressed([{data:[false]}])
+            }
+        }
+        return true
     }
     function addNewWorkout(index){
         // 한번 클릭한 버튼은 다시 나오면 안됨
@@ -807,7 +816,6 @@ const Workout = ({ route }) => {
                         style={{ fontSize:SIZES.h4,fontFamily:'RobotoBold'}}
                         onChangeText={(event)=>handelTitle(event,index)}
                         value={DATA[index].title}
-                        autoFocus={true}
                         placeholder='제목'
                         // onEndEditing={()=>onEndEditing()}
                         autoCompleteType='off'
@@ -916,18 +924,37 @@ const Workout = ({ route }) => {
         )
     }
 
+    // function renderForm(data,index){
+    //     return(
+    //         <View key={index}>
+    //         {renderHeader(index)}
+    //         {
+    //             checkform(index)?
+    //             (<>{
+    //               isPressed&&renderBody(index)
+    //             }</>):
+    //             <></>
+    //         }
+    //         </View>
+    //     )
+    // }
+
     function renderForm(data,index){
         return(
-            <View key={index}>
-            {renderHeader(index)}
-            {
-                checkform(index)?
-                (<>{
-                  isPressed&&renderBody(index)
-                }</>):
-                <View/>
-            }
-            </View>
+            isRendered()?
+            (<View key={index}>{
+                isPressed?
+                <View >
+                    {renderHeader(index)}
+                    {
+                        checkform(index)?
+                        renderBody(index):
+                        <></>
+                    }
+                </View>:
+                <Text>로딩중입니다</Text>
+            }</View>)
+            :<></>
         )
     }
 
