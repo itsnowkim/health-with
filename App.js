@@ -52,6 +52,8 @@ const App = () => {
   //   copyDB();
   // }, [])
 
+// push test
+
   // key name으로 fontfaily 적용가능.
   const [loaded] = useFonts({
     RobotoBlack : require('./assets/fonts/Roboto-Black.ttf'),
