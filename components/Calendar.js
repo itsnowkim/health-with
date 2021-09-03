@@ -65,7 +65,7 @@ const CalendarBase = ({setSelectedDate}) => {
             'stylesheet.calendar.header': {
               week: {
                 marginTop: SIZES.padding,
-                marginHorizontal: SIZES.padding2,
+                marginHorizontal: SIZES.padding,
                 flexDirection: 'row',
                 justifyContent: 'space-between'
               },

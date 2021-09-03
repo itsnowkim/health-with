@@ -49,6 +49,16 @@ export const GET_WORKOUT_TAG = `
   ON workout_session_tag.tag_id = tag.id
 `
 
+export const GET_ALL_BY_WORKOUT_ID = `
+SELECT session.id, session.name, sets.weight , sets.time, sets.rep, sets.lb, tag.name AS tag_name, tag.id AS tag_id,tag.color
+FROM workout
+JOIN workout_session_tag ON workout.id = workout_session_tag.workout_id
+JOIN session ON workout_session_tag.session_id = session.id
+JOIN tag ON workout_session_tag.tag_id = tag.id
+JOIN session_set ON workout_session_tag.session_id = session_set.session_id AND workout_session_tag.workout_id = session_set.workout_id
+JOIN sets ON session_set.set_id = sets.id
+`
+
 /*
 `
   SELECT workout.date,  tag.name,  sets.weight, sets.rep, sets.time

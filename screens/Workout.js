@@ -11,7 +11,15 @@ import { FontAwesome } from '@expo/vector-icons';
 import Animated, { color } from 'react-native-reanimated';
 import BottomSheet from 'reanimated-bottom-sheet';
 
+//db
+import DatabaseLayer from 'expo-sqlite-orm/src/DatabaseLayer'
+import * as SQLite from 'expo-sqlite'
+import { GET_ALL_BY_WORKOUT_ID } from "./Report/ReportQueries";
+import { getDATAfromDB } from "../util/getDATAfromDB";
+
 const Workout = ({ route }) => {
+    const [loaded,setLoaded] = useState(false);
+
     const [isEnabled, setIsEnabled] = useState([false]);
     const toggleSwitch = (index) => {
         let temp = [...isEnabled];
@@ -39,9 +47,8 @@ const Workout = ({ route }) => {
     }
 
     // angledown, angleup 판단하는 state - DATA.data 개수만큼 true,false 있어야 함
-    const [isPressed, setIsPressed] = useState([{
-        data:[false]
-    }])
+    const [isPressed, setIsPressed] = useState(null)
+
     const togglePressed = (index,innerindex) => {
         let temp = [...isPressed];
         console.log(index,innerindex)
@@ -84,42 +91,38 @@ const Workout = ({ route }) => {
         {name:'어깨',color:'#CB5A97',id:3},
         {name:'하체',color:'#7A5ACB',id:4}
     ])
-    // const [DATA, setDATA] = useState([
-    //     {
-    //       title: '랫풀다운',
-    //       tag: [{name:'등',color:COLORS.tag_darkblue}],
-    //       data: [
-    //         {rep: 10, weight: 40, time: null},
-    //         {rep: 10, weight: 40, time: null},
-    //         {rep: 10, weight: 40, time: null},
-    //         {rep: 10, weight: 40, time: null},
-    //         {rep: 10, weight: 40, time: null}
-    //       ]
-    //     },
-    //     {
-    //       title: '데드리프트',
-    //       tag: [{name:'등',color:COLORS.tag_darkblue},{name:'하체',color:COLORS.tag_purple}],
-    //       data: [
-    //         {rep: 10, weight: 80, time: null},
-    //         {rep: 10, weight: 80, time: null},
-    //         {rep: 10, weight: 80, time: null},
-    //         {rep: 10, weight: 80, time: null},
-    //         {rep: 10, weight: 100, time: null},
-    //       ]
-    //     }
-    //   ])
 
     function fetchData(itemId){
         // local에서 DATA 가져와서 넣기
-        console.log('fetchData')
+        const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('testDB.db'))
+        databaseLayer.executeSql(GET_ALL_BY_WORKOUT_ID+`WHERE workout.id=${itemId}`)
+        .then((response) => {
+            const responseList = response.rows
+            let temp = getDATAfromDB(responseList)
+            setDATA(temp)
+            
+            // angledown, angleup 판단하는 state - DATA.data 개수만큼 true,false 있어야 함
+            let pressedlist = []       
+            temp.map((i,idx)=>{
+                let aaa = {data:[]}
+                pressedlist.push(aaa)
+                i.data.map((j)=>{
+                    pressedlist[idx].data.push(false)
+                })
+            })
+            setIsPressed(pressedlist)
+        })
+        .catch((err) => {
+            console.log(err)
+        })
     }
 
     useEffect(()=> {
         // 처음 마운트 되었을 때 넘어온 id로 local storage에서 get.
         const {itemId} = route.params;
-        //console.log(itemId)
+        console.log(itemId)
 
-        if (itemId === 2){
+        if (itemId === 0){
             // no item id, 새로 작성하는 경우
             console.log('생성')
         }else{
@@ -129,15 +132,10 @@ const Workout = ({ route }) => {
         }
         // 화면을 나갈 때 변경사항이 있는지 체크(저장할 경우 data가 바뀌므로)
         return () => {
+            setIsPressed(null)
             console.log('Workout Page 언마운트')
         }
     }, []);
-
-    // useEffect(()=>{
-    //     //DATA 길이가 변경되었을 경우 실행 - 토글 어디에 붙일지 모르니까 인덱싱 작업 필요
-    //     if(DATA.LE)
-
-    // },[DATA])
 
     function handleTagAdd(index){
         console.log(AllTag)
@@ -305,8 +303,25 @@ const Workout = ({ route }) => {
         if(DATA[index].title !== ''){
             return true
         }else{
+            // data가 없을 경우는 setisPressed안에 초기값 넣고
+            // data가 있을 때는 아무것도 안함
+            // if(route.params.itemId === 0){
+            //     if(!isPressed){
+            //         setIsPressed([{data:[false]}])
+            //     }
+            // }
             return false
         }
+    }
+    function isRendered(){
+        // data가 없을 경우는 setisPressed안에 초기값 넣고
+        // data가 있을 때는 아무것도 안함
+        if(route.params.itemId === 0){
+            if(!isPressed){
+                setIsPressed([{data:[false]}])
+            }
+        }
+        return true
     }
     function addNewWorkout(index){
         // 한번 클릭한 버튼은 다시 나오면 안됨
@@ -384,8 +399,8 @@ const Workout = ({ route }) => {
                         ))
                     }
                 </View>
-                <View style={{marginTop:30}}>
-                    <View style={{flexDirection:'row',alignItems:'center', justifyContent:'space-around'}}>
+                <View style={{marginTop:10}}>
+                    <View style={{flexDirection:'row',alignItems:'center', justifyContent:'center'}}>
                         <TextInput
                             style={{ height:23, fontFamily:'RobotoBold',fontSize:SIZES.body4,color:COLORS.lightWhite,backgroundColor:tagCustomize.color,paddingRight:5,paddingLeft:5, borderRadius:SIZES.radius}}
                             onChangeText={(event)=>handleTagCustomizeAdd(event,tagCustomize.color)}
@@ -397,6 +412,7 @@ const Workout = ({ route }) => {
                             placeholderTextColor='#ffffff'
                         />
                         <TouchableOpacity
+                            style={{marginLeft:10}}
                             onPress={()=>{
                                 addNewTag()
                             }}
@@ -405,7 +421,7 @@ const Workout = ({ route }) => {
                                 tagCustomize.name !== ''?
                                 <FontAwesome
                                 name="check"
-                                color={COLORS.primary}
+                                color={'#404040'}
                                 style={{transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }],marginRight:20}}
                                 />:
                                 <FontAwesome
@@ -595,29 +611,29 @@ const Workout = ({ route }) => {
     function renderAnglePressedForm(index,innerindex){
         return(
             <View style={{flexDirection:'row', justifyContent:'space-around'}}>
-                <View style={{marginLeft:'22%'}}>
+                <View style={{marginLeft:'25%'}}>
                     <View style={{flexDirection:'row'}}>
                         <TouchableOpacity style={styles.leftbuttonContainer} onPress={()=>{
                             handleLeftButtonPressed(index,innerindex,1,0)
                         }}>
-                            <Text style={[styles.text,{color:COLORS.primary}]}>- 1</Text>
+                            <Text style={[styles.text,{color:'#404040'}]}>- 1</Text>
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.rightbuttonContainer} onPress={()=>{
                             handleRightButtonPressed(index,innerindex,1,0)
                         }}>
-                            <Text style={[styles.text,{color:'white'}]}>+1</Text>
+                            <Text style={[styles.text,{color:'#404040'}]}>+1</Text>
                         </TouchableOpacity>
                     </View>
                     <View style={{flexDirection:'row'}}>
                         <TouchableOpacity style={styles.leftbuttonContainer} onPress={()=>{
                             handleLeftButtonPressed(index,innerindex,5,0)
                         }}>
-                            <Text style={[styles.text,{color:COLORS.primary}]}>- 5</Text>
+                            <Text style={[styles.text,{color:'#404040'}]}>- 5</Text>
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.rightbuttonContainer} onPress={()=>{
                             handleRightButtonPressed(index,innerindex,5,0)
                         }}>
-                            <Text style={[styles.text,{color:'white'}]}>+5</Text>
+                            <Text style={[styles.text,{color:'#404040'}]}>+5</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -652,6 +668,7 @@ const Workout = ({ route }) => {
     }
 
     function rendersets(item,innerindex,index){
+        console.log(isPressed)
         return(
             <View key={innerindex}>
             <View style={styles.rowcontainer}>
@@ -660,9 +677,11 @@ const Workout = ({ route }) => {
                     }}>
                     <View style={{flexDirection:'row', alignItems:'center'}}>
                         {
-                            isPressed[index].data[innerindex]?
+                            isPressed&&isPressed[index].data[innerindex]&&
                             <FontAwesome name="angle-up" color={COLORS.primary} style={{transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }]}}/>
-                            :
+                        }
+                        {
+                            isPressed&&!isPressed[index].data[innerindex]&&
                             <FontAwesome name="angle-down" style={{transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }]}}/>
                         }
                         <Text style={[styles.text,{marginLeft:SIZES.padding2*2}]}>{innerindex + 1}세트</Text>
@@ -702,20 +721,18 @@ const Workout = ({ route }) => {
                     </View>
                     <Text style={[styles.text,{marginTop:4}]}>회</Text>
                 </View>
-                <TouchableOpacity style={{marginRight:SIZES.padding}} onPress={()=>{
+                <TouchableOpacity style={{marginRight:SIZES.padding,marginTop:1}} onPress={()=>{
                     delSets(index,innerindex)
                 }}>
                     <FontAwesome
                     name="minus"
-                    style={{transform: [{ scaleX: 1 }, { scaleY: 1 }]}}
+                    style={{transform: [{ scaleX: 1 }, { scaleY: 0.5 }]}}
                     />
                 </TouchableOpacity>
             </View>
             {
-                isPressed[index].data[innerindex]?
+                isPressed&&isPressed[index].data[innerindex]&&
                 renderAnglePressedForm(index,innerindex)
-                :
-                <></>
             }
             </View>
         )
@@ -800,7 +817,6 @@ const Workout = ({ route }) => {
                         style={{ fontSize:SIZES.h4,fontFamily:'RobotoBold'}}
                         onChangeText={(event)=>handelTitle(event,index)}
                         value={DATA[index].title}
-                        autoFocus={true}
                         placeholder='제목'
                         // onEndEditing={()=>onEndEditing()}
                         autoCompleteType='off'
@@ -863,8 +879,8 @@ const Workout = ({ route }) => {
                         />
                         {
                             !isEnabled[index]?
-                            <Text style={{fontFamily:'RobotoRegular',fontSize:SIZES.body3}}>웨이트 트레이닝</Text>:
-                            <Text style={{fontFamily:'RobotoRegular',fontSize:SIZES.body3}}>유산소 운동</Text>
+                            <Text style={{fontFamily:'RobotoRegular',fontSize:SIZES.body3}}>유산소</Text>:
+                            <Text style={{fontFamily:'RobotoRegular',fontSize:SIZES.body3}}>유산소</Text>
                         }
                     </View>
                     <Switch
@@ -909,16 +925,37 @@ const Workout = ({ route }) => {
         )
     }
 
+    // function renderForm(data,index){
+    //     return(
+    //         <View key={index}>
+    //         {renderHeader(index)}
+    //         {
+    //             checkform(index)?
+    //             (<>{
+    //               isPressed&&renderBody(index)
+    //             }</>):
+    //             <></>
+    //         }
+    //         </View>
+    //     )
+    // }
+
     function renderForm(data,index){
         return(
-            <View key={index}>
-            {renderHeader(index)}
-            {
-                checkform(index)?
-                renderBody(index):
-                <View/>
-            }
-            </View>
+            isRendered()?
+            (<View key={index}>{
+                isPressed?
+                <View >
+                    {renderHeader(index)}
+                    {
+                        checkform(index)?
+                        renderBody(index):
+                        <></>
+                    }
+                </View>:
+                <Text>로딩중입니다</Text>
+            }</View>)
+            :<></>
         )
     }
 
@@ -988,10 +1025,9 @@ const styles = StyleSheet.create({
         fontSize: SIZES.body3,
         fontFamily: 'RobotoMedium',
         paddingRight: SIZES.base,
-        paddingBottom:10
     },
     text:{
-        fontFamily:'RobotoRegular',
+        fontFamily:'RobotoThin',
         fontSize:SIZES.body3
     },
     tagContainer:{
@@ -1004,16 +1040,16 @@ const styles = StyleSheet.create({
         marginBottom:12
     },
     leftbuttonContainer:{
-        backgroundColor:COLORS.secondary,
+        backgroundColor:'#E9E9EB',
         borderRadius:SIZES.radius*3,
-        margin:5,
+        margin:3,
         paddingHorizontal:10,
         justifyContent:'center'
     },
     rightbuttonContainer:{
-        backgroundColor:COLORS.primary,
+        backgroundColor:'#E9E9EB',
         borderRadius:SIZES.radius*3,
-        margin:5,
+        margin:3,
         paddingHorizontal:10,
         justifyContent:'center'
     },

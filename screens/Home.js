@@ -7,6 +7,20 @@ import { COLORS, SIZES } from "../constants";
 import { FontAwesome } from '@expo/vector-icons';
 
 import WorkoutCard from "../components/WorkoutCard";
+import Line3 from "../components/Line3";
+
+//db
+import Workout from "../model/Workout";
+import Workout_Session_Tag from "../model/Workout_Session_Tag";
+import Tag from "../model/Tag";
+import Set from "../model/Set";
+import Session_Set from "../model/Session_Set";
+import Session from "../model/Session";
+import DatabaseLayer from 'expo-sqlite-orm/src/DatabaseLayer'
+import * as SQLite from 'expo-sqlite'
+import { GET_ALL_BY_WORKOUT_ID } from "./Report/ReportQueries";
+import { getDATAfromDB } from "../util/getDATAfromDB";
+
 
 const Home = ( {navigation} ) => {
   
@@ -21,43 +35,15 @@ const Home = ( {navigation} ) => {
 
   //workout id,datestring 담는 state
   const [workout,setWorkout] = useState({
-    id: 1,
+    id: 0,
     dateString: selectedDate.dateString
   })
 
-  // 임시
-  const [sessionTitle,setSessionTitle] = useState([
-      {
-        title: '랫풀다운',
-        tag: [{name:'등',color:'#FBBB0D'}],
-      },
-      {
-        title: '데드리프트',
-        tag: [{name:'등',color:'#FBBB0D'},{name:'하체',color:'#7A5ACB'}],
-      }
-    
-  ])
-
-  const [sessionBody, setSessionBody] = useState([
+  const [DATA,setDATA] = useState([
     {
-      title: '랫풀다운',
-      data: [
-        {rep: 10, weight: 40, time: null},
-        {rep: 10, weight: 40, time: null},
-        {rep: 10, weight: 40, time: null},
-        {rep: 10, weight: 40, time: null},
-        {rep: 10, weight: 40, time: null}
-      ]
-    },
-    {
-      title: '데드리프트',
-      data: [
-        {rep: 10, weight: 80, time: null},
-        {rep: 10, weight: 80, time: null},
-        {rep: 10, weight: 80, time: null},
-        {rep: 10, weight: 80, time: null},
-        {rep: 10, weight: 100, time: null},
-      ]
+        title:'',
+        tag:[{name:'',color:'',id:''}],
+        data:[{rep:'',weight:'',time:''}]
     }
   ])
 
@@ -91,50 +77,42 @@ const Home = ( {navigation} ) => {
   }
 
   function getWorkoutFromDB(props){
-    // db로 datestring 넘겨서
-    // workout.workout_date = props 인 workout.id get.
-    // 해당 workout.id로 session 있는지 체크
-    // if (session) {
-    //   join문으로 세션이름, 태그 가져오고
-    //   세션 아이디로 세트수 가져오기
-    // }else{
-    //   해당 날짜에 운동이 없다고 표시해야함.
-    //   리턴으로 뭘 주면 좋을까
-    // }
-    console.log('get workout db - 1 yes : ' + props)
-    if (props == "2021-08-23" || props == "2021-08-24"){
-      // 운동 함
-      //console.log(props)
-      setSchedule(0)
-      setWorkout({
-        // 임시로 쓰는 id.
-        id: 2,
-        dateString:selectedDate.dateString
-      })
-    }else{
-      // 운동안함
-      setSchedule(1)
-      setWorkout({
-        // 임시로 쓰는 id.
-        id: 1,
-        dateString:selectedDate.dateString
-      })
+    if(props !== ''){
+      // props에 해당하는 workout id 찾기
+      const setData = async () => {
+        let res1 = await Workout.findBy({date_eq:props})
+        if(res1 === null){
+          setWorkout({id:0,dateString:props})
+          setSchedule(0)
+        }else{
+          setSchedule(1)
+          setWorkout(res1)
+          // 세션 이름, 태그 + 세트 수까지 다 가져와야함
+          const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('testDB.db'))
+          databaseLayer.executeSql(GET_ALL_BY_WORKOUT_ID+`WHERE workout.id=${res1.id}`)
+          .then((response) => {
+            const responseList = response.rows
+            let temp = getDATAfromDB(responseList)
+            setDATA(temp)
+          })
+          .catch((err) => {
+            console.log(err)
+          })
+        }
+      }
+      setData()
     }
   }
 
   // init 함수
   useEffect(()=>{
     setcurrent()
-    getWorkoutFromDB(selectedDate.dateString)
+    // return()으로 다른 report 갈때 update된거 있으면 update
   },[])
 
   useEffect(()=>{
     getWorkoutFromDB(selectedDate.dateString)
   },[selectedDate])
-
-  // useEffect(()=>{
-  //   getWorkoutFromDB(workout.id)
-  // },[workout])
 
   function renderCalendar() {
     return (
@@ -142,6 +120,7 @@ const Home = ( {navigation} ) => {
         <CalendarBase
           setSelectedDate={setSelectedDate}
         />
+        <Line3/>
       </View>
     )
   }
@@ -157,7 +136,6 @@ const Home = ( {navigation} ) => {
               backgroundColor={COLORS.transparent}
               color={COLORS.primary}
               size={SIZES.h2}
-              
             >
             </FontAwesome>
           </TouchableOpacity>
@@ -167,13 +145,14 @@ const Home = ( {navigation} ) => {
   }
 
   function renderSchedule() {
-    return (
+    return (<>
       <View style={{flex:1}}>
         <WorkoutCard
-          sessionTitle={sessionTitle}
-          sessionBody={sessionBody}
+          DATA={DATA}
         ></WorkoutCard>
       </View>
+      <View style={{height:SIZES.height/3}}></View>
+      </>
     )
   }
 
@@ -206,7 +185,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.transparent,
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop:SIZES.padding2
+    marginTop:14
   },
   text: {
     fontSize: SIZES.h4,
