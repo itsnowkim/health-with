@@ -158,7 +158,7 @@ const Home = ( {navigation} ) => {
 
   function noSchedule() {
     return (
-      <View style={{marginTop:SIZES.padding,height:'90%',justifyContent:'center',alignItems:'center', backgroundColor:COLORS.lightGray}}>
+      <View style={{marginTop:SIZES.padding,height:SIZES.height/2,justifyContent:'center',alignItems:'center', backgroundColor:COLORS.lightGray}}>
       </View>
     )
   }
