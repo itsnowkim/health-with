@@ -16,9 +16,10 @@ import DatabaseLayer from 'expo-sqlite-orm/src/DatabaseLayer'
 import * as SQLite from 'expo-sqlite'
 import { GET_ALL_BY_WORKOUT_ID } from "./Report/ReportQueries";
 import { getDATAfromDB } from "../util/getDATAfromDB";
+import TagDb from '../model/Tag';
 
 const Workout = ({ route }) => {
-    const [loaded,setLoaded] = useState(false);
+    //const [loaded,setLoaded] = useState(false);
 
     const [isEnabled, setIsEnabled] = useState([false]);
     const toggleSwitch = (index) => {
@@ -50,7 +51,7 @@ const Workout = ({ route }) => {
 
     const togglePressed = (index,innerindex) => {
         let temp = [...isPressed];
-        console.log(index,innerindex)
+        //console.log(index,innerindex)
 
         temp[index].data[innerindex] = !temp[index].data[innerindex]
         setIsPressed(temp)
@@ -84,15 +85,15 @@ const Workout = ({ route }) => {
             data:[{rep:'',weight:'',time:''}]
         }
     ])
-    const [AllTag,setAllTag] = useState([
-        {name:'등',color:'#FBBB0D',id:1},
-        {name:'가슴',color:'#3A8B86',id:2},
-        {name:'어깨',color:'#CB5A97',id:3},
-        {name:'하체',color:'#7A5ACB',id:4}
-    ])
+    const [AllTag,setAllTag] = useState([])
+
+    const getTag = async () => {
+        const tags = await TagDb.query({order:'id ASC'})
+        setAllTag(tags)
+    }
 
     function fetchData(itemId){
-        // local에서 DATA 가져와서 넣기
+        // db에서 DATA 가져와서 넣기        
         const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('testDB.db'))
         databaseLayer.executeSql(GET_ALL_BY_WORKOUT_ID+`WHERE workout.id=${itemId}`)
         .then((response) => {
@@ -120,6 +121,7 @@ const Workout = ({ route }) => {
         // 처음 마운트 되었을 때 넘어온 id로 local storage에서 get.
         const {itemId} = route.params;
         console.log(itemId)
+        getTag()
 
         if (itemId === 0){
             // no item id, 새로 작성하는 경우
@@ -137,7 +139,7 @@ const Workout = ({ route }) => {
     }, []);
 
     function handleTagAdd(index){
-        console.log(AllTag)
+        //console.log(AllTag)
         // 체크해서 이미 있으면 아무것도 안함.
         let color = AllTag[index].color
         let name = AllTag[index].name
@@ -197,6 +199,7 @@ const Workout = ({ route }) => {
             temp[tagUpdate.index] = {...temp[tagUpdate.index], name:tagUpdate.name,color:tagUpdate.color,id:tagUpdate.id}
             setAllTag(temp)
             // db에 있는 태그 테이블에 변경된 점 반영.
+            TagDb.update({id:tagUpdate.id,name:tagUpdate.name,color:tagUpdate.color})
             // 이미 등록된 태그도 같이 변경해 주어야 함.
             let addedTag = [...DATA];
 
@@ -217,6 +220,7 @@ const Workout = ({ route }) => {
     function handleTagCustomizeAdd(event,color){
         const id = AllTag.length+1
         setTagCustomize({name:event,color:color,id:id})
+
     }
 
     function delSets(index,innerindex){
@@ -275,7 +279,6 @@ const Workout = ({ route }) => {
     }
 
     function handleRightButtonPressed(index,innerindex,number,flag){
-        console.log(index,innerindex,number,flag)
         if(flag === 1){
             let temp = [...DATA]
             temp[index].data[innerindex] = {...temp[index].data[innerindex], rep: Number(temp[index].data[innerindex].rep) + number};
@@ -293,6 +296,7 @@ const Workout = ({ route }) => {
             setAllTag(prevArr => [...prevArr,{name:tagCustomize.name,color:tagCustomize.color,id:tagCustomize.id}])
             setTagCustomize({name:'',color:'#B54B4B'})
             // db에 수정된 데이터 upload
+            TagDb.create({name:tagCustomize.name,color:tagCustomize.color})
         }
     }
     function handleTagCustomizeUpdate(event,color){
@@ -332,7 +336,7 @@ const Workout = ({ route }) => {
             }
             let res = [...DATA];
             res[index + 1] = temp
-            console.log(res)
+            //console.log(res)
 
             setDATA(res)
             
@@ -401,7 +405,7 @@ const Workout = ({ route }) => {
                 <View style={{marginTop:10}}>
                     <View style={{flexDirection:'row',alignItems:'center', justifyContent:'center'}}>
                         <TextInput
-                            style={{ height:23, fontFamily:'RobotoBold',fontSize:SIZES.body4,color:COLORS.lightWhite,backgroundColor:tagCustomize.color,paddingRight:5,paddingLeft:5, borderRadius:SIZES.radius}}
+                            style={{ height:23, fontFamily:'RobotoBold',fontSize:SIZES.body5,color:COLORS.lightWhite,backgroundColor:tagCustomize.color,paddingRight:5,paddingLeft:5, borderRadius:SIZES.radius}}
                             onChangeText={(event)=>handleTagCustomizeAdd(event,tagCustomize.color)}
                             value={tagCustomize.name}
                             // onEndEditing={()=>onEndEditing()}
@@ -461,17 +465,20 @@ const Workout = ({ route }) => {
                 </View>
                 {
                     tagUpdate.index !== null ?
-                    <View style={{marginTop:30}}>
-                        <View style={{flexDirection:'row',alignItems:'center', justifyContent:'space-around'}}>
+                    <View style={{marginTop:10}}>
+                        <View style={{flexDirection:'row',alignItems:'center', justifyContent:'center'}}>
                             <TextInput
-                                style={{ height:23, fontFamily:'RobotoBold',fontSize:SIZES.body4,color:COLORS.lightWhite,backgroundColor:tagUpdate.color,paddingRight:5,paddingLeft:5, borderRadius:SIZES.radius}}
+                                style={{ height:23, fontFamily:'RobotoBold',fontSize:SIZES.body5,color:COLORS.lightWhite,backgroundColor:tagUpdate.color,paddingRight:5,paddingLeft:5, borderRadius:SIZES.radius}}
                                 onChangeText={(event)=>handleTagCustomizeUpdate(event,tagUpdate.color)}
                                 value={tagUpdate.name}
                                 // onEndEditing={()=>onEndEditing()}
                                 autoCompleteType='off'
+                                placeholder='태그명을 입력하세요'
                                 autoCorrect={false}
+                                placeholderTextColor='#ffffff'
                             />
                             <TouchableOpacity
+                                style={{marginLeft:10}}
                                 onPress={()=>{
                                     updateTagCustom()
                                 }}
@@ -480,7 +487,7 @@ const Workout = ({ route }) => {
                                     tagUpdate.name !== ''?
                                     <FontAwesome
                                     name="check"
-                                    color={COLORS.primary}
+                                    color={'#404040'}
                                     style={{transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }],marginRight:20}}
                                     />:
                                     <FontAwesome
@@ -667,7 +674,7 @@ const Workout = ({ route }) => {
     }
 
     function rendersets(item,innerindex,index){
-        console.log(isPressed)
+        //console.log(isPressed)
         return(
             <View key={innerindex}>
             <View style={styles.rowcontainer}>
@@ -844,7 +851,7 @@ const Workout = ({ route }) => {
                     </TouchableOpacity>
                 </View>       
                 <Line2/>
-                <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between', marginTop:SIZES.padding/2}}>
+                <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between', marginTop:SIZES.padding}}>
                     <ScrollView horizontal={true} contentContainerStyle={{alignItems:'center'}}>
                     {renderTagPlus(index)}
                     {
@@ -874,11 +881,7 @@ const Workout = ({ route }) => {
                             color={COLORS.primary}
                             style={{transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }],marginRight:10}}
                         />
-                        {
-                            !isEnabled[index]?
-                            <Text style={{fontFamily:'RobotoRegular',fontSize:SIZES.body3}}>유산소</Text>:
-                            <Text style={{fontFamily:'RobotoRegular',fontSize:SIZES.body3}}>유산소</Text>
-                        }
+                        <Text style={{fontFamily:'RobotoRegular',fontSize:SIZES.body3}}>유산소</Text>
                     </View>
                     <Switch
                         trackColor={{true:COLORS.primary}}
@@ -887,6 +890,7 @@ const Workout = ({ route }) => {
                         style={{transform: [{ scaleX: .7 }, { scaleY: .7 }]}}
                     />
                 </View>
+                {!isEnabled[index]?
                 <View style={styles.rowcontainer}>
                     <View style={{flexDirection:'row', alignItems:'center'}}>
                         <FontAwesome
@@ -902,7 +906,7 @@ const Workout = ({ route }) => {
                         value={measure[index]}
                         style={{transform: [{ scaleX: .7 }, { scaleY: .7 }]}}
                     />
-                </View>
+                </View>:<></>}
                 {   
                     !isEnabled[index]?
                     DATA[index].data.map((item,innerindex)=>rendersets(item,innerindex,index)):
@@ -982,7 +986,7 @@ const Workout = ({ route }) => {
             }
             <BottomSheet
                 ref={TagSheet}
-                snapPoints={[680, 0, 0]}
+                snapPoints={[750, 0, 0]}
                 borderRadius={20}
                 renderContent={()=>renderbottomsheet()}
                 initialSnap={1}
@@ -1030,11 +1034,12 @@ const styles = StyleSheet.create({
     tagContainer:{
         backgroundColor: 'white',
         padding: SIZES.padding*2,
-        height: 680,
+        height: 750,
     },
     tagTitleContainer:{
         marginTop:12,
-        marginBottom:12
+        marginBottom:12,
+        marginLeft:6
     },
     leftbuttonContainer:{
         backgroundColor:'#E9E9EB',
