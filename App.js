@@ -13,11 +13,12 @@ import RemoveAd from "./screens/Detail/RemoveAd";
 import SendIdea from "./screens/Detail/SendIdea";
 import SendReview from "./screens/Detail/SendReview";
 import { Alert } from "react-native";
+import { FontAwesome } from '@expo/vector-icons';
 
 // font 적용
 import { useFonts } from 'expo-font';
 import { COLORS, SIZES } from "./constants";
-import { Button, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 
 // import existing db
 import * as FileSystem from 'expo-file-system';
@@ -85,17 +86,22 @@ const App = () => {
         
         <Stack.Screen
           name="Workout"
-          component={Workout} 
-          options={({ route }) => ({ 
+          component={Workout}
+          options={({ route,navigation }) => ({ 
             title: route.params.name,
             headerRight: () => (
-              // <Button
-              //   onPress={() => alert('This is a button!')}
-              //   title="저장"
-              //   color="red"
-              // />
               <TouchableOpacity onPress={()=>alert('저장 누름')}>
-                <Text style={{color:COLORS.primary, fontSize:SIZES.h4, marginRight:SIZES.padding}}>저장</Text>
+                <Text style={{color:COLORS.primary, fontSize:17, marginRight:SIZES.padding}}>저장</Text>
+              </TouchableOpacity>
+            ),
+            headerLeft: () => (
+              <TouchableOpacity style={{flexDirection:'row',alignItems:'center'}} onPress={()=>navigation.goBack()}>
+                <FontAwesome
+                  name="angle-left"
+                  color={COLORS.primary}
+                  style={{transform: [{ scaleX: 2 }, { scaleY: 2 }],marginLeft:SIZES.padding}}
+                />
+                <Text style={{fontSize:17, marginLeft:SIZES.padding}}>캘린더</Text>
               </TouchableOpacity>
             )
           })}

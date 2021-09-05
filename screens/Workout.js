@@ -29,7 +29,6 @@ const Workout = ({ route }) => {
         if(measure[index] === true){
             toggleMeasure(index)
         }
-
         //DATA 비우기
         let del = [...DATA]
         del[index].data = [{rep:'',time:'',weight:''}]
@@ -642,24 +641,24 @@ const Workout = ({ route }) => {
                         <TouchableOpacity style={styles.leftbuttonContainer} onPress={()=>{
                             handleLeftButtonPressed(index,innerindex,1,1)
                         }}>
-                            <Text style={[styles.text,{color:COLORS.primary}]}>- 1</Text>
+                            <Text style={[styles.text,{color:'#404040'}]}>- 1</Text>
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.rightbuttonContainer} onPress={()=>{
                             handleRightButtonPressed(index,innerindex,1,1)
                         }}>
-                            <Text style={[styles.text,{color:'white'}]}>+1</Text>
+                            <Text style={[styles.text,{color:'#404040'}]}>+1</Text>
                         </TouchableOpacity>
                     </View>
                     <View style={{flexDirection:'row'}}>
                         <TouchableOpacity style={styles.leftbuttonContainer} onPress={()=>{
                             handleLeftButtonPressed(index,innerindex,5,1)
                         }}>
-                            <Text style={[styles.text,{color:COLORS.primary}]}>- 5</Text>
+                            <Text style={[styles.text,{color:'#404040'}]}>- 5</Text>
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.rightbuttonContainer} onPress={()=>{
                             handleRightButtonPressed(index,innerindex,5,1)
                         }}>
-                            <Text style={[styles.text,{color:'white'}]}>+5</Text>
+                            <Text style={[styles.text,{color:'#404040'}]}>+5</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -691,7 +690,7 @@ const Workout = ({ route }) => {
                     <View style={{alignItems:'center'}}>
                     <TextInput
                         keyboardType='numeric'
-                        style={{ fontSize:SIZES.body4,fontFamily:'RobotoBold'}}
+                        style={{ fontSize:SIZES.body4,fontFamily:'RobotoRegular'}}
                         onChangeText={(event)=>handleWeight(event,innerindex,index)}
                         value={DATA[index].data[innerindex].weight.toString()}
                         autoCompleteType='off'
@@ -710,7 +709,7 @@ const Workout = ({ route }) => {
                     <View style={{alignItems:'center'}}>
                         <TextInput
                             keyboardType='numeric'
-                            style={{ fontSize:SIZES.body4,fontFamily:'RobotoBold'}}
+                            style={{ fontSize:SIZES.body4,fontFamily:'RobotoRegular'}}
                             onChangeText={(event)=>handleReps(event,innerindex,index)}
                             value={DATA[index].data[innerindex].rep.toString()}
                             autoCompleteType='off'
@@ -814,7 +813,7 @@ const Workout = ({ route }) => {
             <>
                 <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}>
                     <TextInput
-                        style={{ fontSize:SIZES.h4,fontFamily:'RobotoBold'}}
+                        style={{ fontSize:SIZES.h4,fontFamily:'RobotoRegular'}}
                         onChangeText={(event)=>handelTitle(event,index)}
                         value={DATA[index].title}
                         placeholder='제목'
@@ -845,11 +844,9 @@ const Workout = ({ route }) => {
                     </TouchableOpacity>
                 </View>       
                 <Line2/>
-                <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between', marginTop:SIZES.padding}}>
-                    <ScrollView horizontal={true}>
-                    {
-                        renderTagPlus(index)
-                    }
+                <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between', marginTop:SIZES.padding/2}}>
+                    <ScrollView horizontal={true} contentContainerStyle={{alignItems:'center'}}>
+                    {renderTagPlus(index)}
                     {
                         DATA[index].tag.map((item,j)=>(                        
                             <TouchableOpacity key={j} onPress={()=>{
@@ -1027,7 +1024,7 @@ const styles = StyleSheet.create({
         paddingRight: SIZES.base,
     },
     text:{
-        fontFamily:'RobotoThin',
+        fontFamily:'RobotoLight',
         fontSize:SIZES.body3
     },
     tagContainer:{
@@ -1043,14 +1040,15 @@ const styles = StyleSheet.create({
         backgroundColor:'#E9E9EB',
         borderRadius:SIZES.radius*3,
         margin:3,
-        paddingHorizontal:10,
+        paddingHorizontal:15,
+        paddingVertical:8,
         justifyContent:'center'
     },
     rightbuttonContainer:{
         backgroundColor:'#E9E9EB',
         borderRadius:SIZES.radius*3,
         margin:3,
-        paddingHorizontal:10,
+        paddingHorizontal:15,
         justifyContent:'center'
     },
     alltag:{

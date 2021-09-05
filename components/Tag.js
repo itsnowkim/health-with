@@ -1,12 +1,14 @@
-import React, {useEffect, useState} from "react";
-import { StyleSheet, View, Text, FlatList, Button, ScrollView, TouchableOpacity} from "react-native";
+import React from "react";
+import { StyleSheet, View, Text} from "react-native";
 import { COLORS, SIZES } from "../constants";
 
 const Tag = ({name,color}) => {
         return(
             <View style={styles.container}>
-                <View style={{backgroundColor:color, borderRadius:SIZES.radius,justifyContent:'center',padding:2,alignItems:'center'}}>
-                    <Text style={styles.tag}>{name}</Text>
+                <View style={{height:20,backgroundColor:color, borderRadius:SIZES.radius,justifyContent:'center'}}>
+                    <View style={{paddingHorizontal:8}}>
+                        <Text style={styles.tag}>{name}</Text>
+                    </View>
                 </View>
             </View>
     )
@@ -18,10 +20,7 @@ const styles = StyleSheet.create({
     tag:{
         color: COLORS.lightWhite,
         fontFamily:'RobotoBold',
-        fontSize:SIZES.body4,
-        paddingRight:5,
-        paddingLeft:5,
-        
+        fontSize:SIZES.body5,
     },
     container:{
         paddingLeft: SIZES.base/2
