@@ -90,7 +90,21 @@ const App = () => {
           options={({ route,navigation }) => ({ 
             title: route.params.name,
             headerRight: () => (
-              <TouchableOpacity onPress={()=>alert('저장 누름')}>
+              <TouchableOpacity onPress={()=>{
+                Alert.alert(
+                  `${route.params.name} 운동`,
+                  "저장하시겠습니까?",
+                  [
+                    {
+                      text: "Cancel",
+                      onPress: () =>  navigation.setParams({saveButton:false}),
+                      style: "cancel"
+                    },
+                    { text: "OK", onPress: () => navigation.setParams({saveButton:true})}
+                  ],
+                  { cancelable: false }
+                );
+              }}>
                 <Text style={{color:COLORS.primary, fontSize:17, marginRight:SIZES.padding}}>저장</Text>
               </TouchableOpacity>
             ),

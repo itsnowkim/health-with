@@ -6,7 +6,7 @@ export const getDATAfromDB = (responseList) => {
         let resultobj = {
         title:data.name,
         tag:[{id:data.tag_id, name:data.tag_name, color: data.color}],
-        data:[{rep:data.rep,weight:data.weight,time:data.time}]
+        data:[{rep:data.rep, weight:data.weight, time:data.time, lb:data.lb, id:data.session_set_id}]
         }
         if( idx === 0){
         temp[idx] = resultobj
@@ -18,7 +18,7 @@ export const getDATAfromDB = (responseList) => {
                 temp[index].tag[innerindex] = {id:data.tag_id, name:data.tag_name, color: data.color}
             }
             }else{
-            temp[index].data.push({rep:data.rep, weight:data.weight, time:data.time, lb:data.lb})
+            temp[index].data.push({rep:data.rep, weight:data.weight, time:data.time, lb:data.lb, id:data.session_set_id})
             }
         }else{
             index = index +1;

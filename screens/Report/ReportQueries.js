@@ -50,7 +50,7 @@ export const GET_WORKOUT_TAG = `
 `
 
 export const GET_ALL_BY_WORKOUT_ID = `
-SELECT session.id, session.name, sets.weight , sets.time, sets.rep, sets.lb, tag.name AS tag_name, tag.id AS tag_id,tag.color
+SELECT session.id AS session_id, session.name, sets.id AS sets_id, sets.weight , sets.time, sets.rep, sets.lb, tag.name AS tag_name, tag.id AS tag_id,tag.color, session_set.id AS session_set_id
 FROM workout
 JOIN workout_session_tag ON workout.id = workout_session_tag.workout_id
 JOIN session ON workout_session_tag.session_id = session.id

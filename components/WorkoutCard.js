@@ -31,7 +31,7 @@ const WorkoutCard = ({DATA}) => {
     }
 
     return DATA.map((item,index)=>{
-        console.log(item)
+        //console.log(item)
         return(
             <View key={index} style={styles.container}>
                 <TouchableOpacity onPress={onPress} style={styles.item}>

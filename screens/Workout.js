@@ -61,7 +61,7 @@ const Workout = ({ route }) => {
     const [bottomSheetOpened,setBottomSheetOpened] = useState(false)
     const [whichTag,setWhichTag] =useState(0)
 
-    const TagColors = ["#B54B4B", "#DB6E15","#CC8042", "#FBBB0D", "#E6BA35", "#97D53F","#6A8B3A","#3A8B46","#3A8B86","#32BAB2","#3790C9","#576BCF","#7A5ACB","#B25ACB","#CB5A97"]
+    const TagColors = ["#B54B4B", "#DB6E15","#CC8042", "#FBBB0D", "#E6BA35", "#97D53F","#20C997","#6A8B3A","#3A8B46","#3A8B86","#32BAB2","#3790C9","#576BCF","#7A5ACB","#B25ACB","#CB5A97","#FF7979"]
 
     const [tagCustomize,setTagCustomize] = useState({
         name:'',
@@ -81,8 +81,8 @@ const Workout = ({ route }) => {
     const [DATA,setDATA] = useState([
         {
             title:'',
-            tag:[{name:'',color:'',id:''}],
-            data:[{rep:'',weight:'',time:''}]
+            tag:[{name:'',color:'',id:0}],
+            data:[{lb:0,rep:'',weight:'',time:'',id:0}]
         }
     ])
     const [AllTag,setAllTag] = useState([])
@@ -137,6 +137,19 @@ const Workout = ({ route }) => {
             console.log('Workout Page 언마운트')
         }
     }, []);
+
+    function saveDATAtoDB(){
+        console.log('db에 DATA에 있는 값 저장')
+        console.log(DATA)
+    }
+
+    useEffect(()=>{
+        if(route.params.saveButton){
+            console.log('savebutton 누름(true)')
+            // DATA에 있는 값 db에 저장
+            saveDATAtoDB()
+        }
+    },[route.params.saveButton])
 
     function handleTagAdd(index){
         //console.log(AllTag)
@@ -306,13 +319,6 @@ const Workout = ({ route }) => {
         if(DATA[index].title !== ''){
             return true
         }else{
-            // data가 없을 경우는 setisPressed안에 초기값 넣고
-            // data가 있을 때는 아무것도 안함
-            // if(route.params.itemId === 0){
-            //     if(!isPressed){
-            //         setIsPressed([{data:[false]}])
-            //     }
-            // }
             return false
         }
     }
