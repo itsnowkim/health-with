@@ -29,3 +29,12 @@ export const getDATAfromDB = (responseList) => {
     })
     return temp
   }
+
+export const GET_WORKOUT_SESSION_TAG_BY_DATESTRING = `
+SELECT session.id AS session_id, session.name AS session_name, tag.name AS tag_name, tag.id AS tag_id, workout.id AS workout_id
+FROM workout
+JOIN workout_session_tag ON workout.id = workout_session_tag.workout_id
+JOIN session ON workout_session_tag.session_id = session.id
+JOIN tag ON workout_session_tag.tag_id = tag.id
+WHERE workout.date
+`

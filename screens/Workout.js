@@ -15,7 +15,7 @@ import BottomSheet from 'reanimated-bottom-sheet';
 import DatabaseLayer from 'expo-sqlite-orm/src/DatabaseLayer'
 import * as SQLite from 'expo-sqlite'
 import { GET_ALL_BY_WORKOUT_ID } from "./Report/ReportQueries";
-import { getDATAfromDB } from "../util/getDATAfromDB";
+import { getDATAfromDB, GET_WORKOUT_SESSION_TAG_BY_DATESTRING } from "../util/getDATAfromDB";
 import TagDb from '../model/Tag';
 import WorkoutDb from '../model/Workout';
 import SetsDb from '../model/Set';
@@ -202,8 +202,13 @@ const Workout = ({ route }) => {
             }
         })
     }
-    function saveWorkoutSessionTag(){
-        console.log('saveWorkoutSessionTag')
+    function saveWorkoutSessionTag(date){
+        const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('testDB.db'))
+        databaseLayer.executeSql(GET_WORKOUT_SESSION_TAG_BY_DATESTRING+`='${date}'`)
+        .then((response)=>{
+            const responseList = response.rows
+            console.log(responseList)
+        })
     }
     function saveSessionSet(){
         console.log('saveSessionSet')
@@ -212,12 +217,13 @@ const Workout = ({ route }) => {
     function saveDATAtoDB(){
         const target = [...DATA];
         const {itemId} = route.params;
+        const {date} = route.params
 
         target.map((item,index)=>{
-            saveWorkout(itemId,route.params.date)
+            saveWorkout(itemId,date)
             saveSession(item.title)
             saveSets(item.data)
-            // saveWorkoutSessionTag(itemId)
+            saveWorkoutSessionTag(date)
             // saveSessionSet(itemId)
         })
     }
