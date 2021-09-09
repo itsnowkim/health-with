@@ -82,7 +82,7 @@ const Workout = ({ route }) => {
         {
             title:'',
             tag:[{name:'',color:'',id:0}],
-            data:[{lb:0,rep:'',weight:'',time:'',id:0}]
+            data:[{lb:0,rep:0,weight:0,time:null,id:0}]
         }
     ])
     const [AllTag,setAllTag] = useState([])
@@ -150,6 +150,22 @@ const Workout = ({ route }) => {
             saveDATAtoDB()
         }
     },[route.params.saveButton])
+
+    function deleteTag(){
+        TagDb.destroy(tagUpdate.id)
+        const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('testDB.db'))
+        databaseLayer.executeSql(`DELETE FROM workout_session_tag WHERE tag_id=${tagUpdate.id}`)
+        
+        const temp = AllTag.filter((i,j)=>j!==tagUpdate.index);
+        setAllTag(temp)
+        setTagUpdate({
+            name: '',
+            color: '',
+            id:0,
+            index: null
+        })
+        handleTagDelete(whichTag,tagUpdate.index)
+    }
 
     function handleTagAdd(index){
         //console.log(AllTag)
@@ -338,7 +354,7 @@ const Workout = ({ route }) => {
             const temp = {
                 title:'',
                 tag:[],
-                data:[{rep:'',weight:'',time:''}]
+                data:[{rep:0,weight:0,time:null}]
             }
             let res = [...DATA];
             res[index + 1] = temp
@@ -431,12 +447,12 @@ const Workout = ({ route }) => {
                                 <FontAwesome
                                 name="check"
                                 color={'#404040'}
-                                style={{transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }],marginRight:20}}
+                                style={{transform: [{ scaleX: 1.2 }, { scaleY: 1.2 }],marginRight:20}}
                                 />:
                                 <FontAwesome
                                 name="check"
                                 color={COLORS.gray}
-                                style={{transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }],marginRight:20}}
+                                style={{transform: [{ scaleX: 1.2 }, { scaleY: 1.2 }],marginRight:20}}
                                 />
                             }
                         </TouchableOpacity>
@@ -473,16 +489,40 @@ const Workout = ({ route }) => {
                     tagUpdate.index !== null ?
                     <View style={{marginTop:10}}>
                         <View style={{flexDirection:'row',alignItems:'center', justifyContent:'center'}}>
-                            <TextInput
-                                style={{ height:23, fontFamily:'RobotoBold',fontSize:SIZES.body5,color:COLORS.lightWhite,backgroundColor:tagUpdate.color,paddingRight:5,paddingLeft:5, borderRadius:SIZES.radius}}
-                                onChangeText={(event)=>handleTagCustomizeUpdate(event,tagUpdate.color)}
-                                value={tagUpdate.name}
-                                // onEndEditing={()=>onEndEditing()}
-                                autoCompleteType='off'
-                                placeholder='태그명을 입력하세요'
-                                autoCorrect={false}
-                                placeholderTextColor='#ffffff'
-                            />
+                            <TouchableOpacity onPress={()=>{
+                                Alert.alert(
+                                    "정말 삭제하시겠습니까?",
+                                    `${tagUpdate.name} 태그를 삭제합니다`,
+                                    [
+                                    {
+                                        text: "Cancel",
+                                        onPress: () => console.log("Cancel Pressed"),
+                                        style: "cancel"
+                                    },
+                                    { text: "OK", onPress: () => deleteTag()}
+                                    ],
+                                    { cancelable: false }
+                                );
+                            }}>
+                                <FontAwesome
+                                    name="trash"
+                                    style={{transform: [{ scaleX: 1.2 }, { scaleY: 1.2 }],marginRight:10}}
+                                />
+                            </TouchableOpacity>
+                            <View style={{height:20,backgroundColor:tagUpdate.color, borderRadius:SIZES.radius,justifyContent:'center'}}>
+                                <View style={{paddingHorizontal:8}}>
+                                    <TextInput
+                                        style={{color:COLORS.lightWhite,fontFamily:'RobotoBold',fontSize:SIZES.body5}}
+                                        onChangeText={(event)=>handleTagCustomizeUpdate(event,tagUpdate.color)}
+                                        value={tagUpdate.name}
+                                        // onEndEditing={()=>onEndEditing()}
+                                        autoCompleteType='off'
+                                        placeholder='태그명을 입력하세요'
+                                        autoCorrect={false}
+                                        placeholderTextColor='#ffffff'
+                                    />
+                                </View>
+                            </View>
                             <TouchableOpacity
                                 style={{marginLeft:10}}
                                 onPress={()=>{
@@ -494,12 +534,12 @@ const Workout = ({ route }) => {
                                     <FontAwesome
                                     name="check"
                                     color={'#404040'}
-                                    style={{transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }],marginRight:20}}
+                                    style={{transform: [{ scaleX: 1.2 }, { scaleY: 1.2 }]}}
                                     />:
                                     <FontAwesome
                                     name="check"
                                     color={COLORS.gray}
-                                    style={{transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }],marginRight:20}}
+                                    style={{transform: [{ scaleX: 1.2 }, { scaleY: 1.2 }]}}
                                     />
                                 }
                             </TouchableOpacity>
@@ -914,7 +954,7 @@ const Workout = ({ route }) => {
                     />
                 </View>:<></>}
                 {   
-                    !isEnabled[index]?
+                    DATA[index].data[0].time!==null || !isEnabled[index]?
                     DATA[index].data.map((item,innerindex)=>rendersets(item,innerindex,index)):
                     renderAerobic(index)
                 }
