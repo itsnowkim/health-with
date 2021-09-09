@@ -19,8 +19,6 @@ import { getDATAfromDB } from "../util/getDATAfromDB";
 import TagDb from '../model/Tag';
 
 const Workout = ({ route }) => {
-    //const [loaded,setLoaded] = useState(false);
-
     const [isEnabled, setIsEnabled] = useState([false]);
     const toggleSwitch = (index) => {
         let temp = [...isEnabled];
@@ -32,7 +30,7 @@ const Workout = ({ route }) => {
         }
         //DATA 비우기
         let del = [...DATA]
-        del[index].data = [{rep:'',time:'',weight:''}]
+        del[index].data = [{rep:'',time:'',weight:'',lb:false}]
         setDATA(del)
     }
     const [measure, setMeasure] = useState([false]);
@@ -40,6 +38,17 @@ const Workout = ({ route }) => {
         let temp = [...measure];
         temp[index] = !temp[index]
         setMeasure(temp)
+
+        let arr = [...DATA];
+        arr[index].data.map((i,j)=>{
+            if(i.lb === 0){
+                arr[index].data[j].lb = 1
+            }else{
+                arr[index].data[j].lb = 0
+            }
+        })
+        console.log(arr)
+        setDATA(arr)
 
         if(isEnabled[index]=== true){
             toggleSwitch(index)
@@ -82,7 +91,7 @@ const Workout = ({ route }) => {
         {
             title:'',
             tag:[{name:'',color:'',id:0}],
-            data:[{lb:0,rep:0,weight:0,time:null,id:0}]
+            data:[{lb:0,rep:'',weight:'',time:null,id:0}]
         }
     ])
     const [AllTag,setAllTag] = useState([])
@@ -104,6 +113,13 @@ const Workout = ({ route }) => {
             // angledown, angleup 판단하는 state - DATA.data 개수만큼 true,false 있어야 함
             let pressedlist = []       
             temp.map((i,idx)=>{
+                if(i.data[0].time!==null){
+                    // 유산소 운동
+                    let temp = isEnabled
+                    temp[idx] = true
+                    setIsEnabled(temp)
+                }
+
                 let aaa = {data:[]}
                 pressedlist.push(aaa)
                 i.data.map((j)=>{
@@ -130,6 +146,7 @@ const Workout = ({ route }) => {
             // get data from local storage
             console.log('수정')
             fetchData(itemId)
+
         }
         // 화면을 나갈 때 변경사항이 있는지 체크(저장할 경우 data가 바뀌므로)
         return () => {
@@ -273,7 +290,9 @@ const Workout = ({ route }) => {
         let push = {
             rep:DATA[index].data[count-1].rep,
             weight:DATA[index].data[count-1].weight,
-            time:DATA[index].data[count-1].time
+            time:DATA[index].data[count-1].time,
+            lb:DATA[index].data[count-1].lb,
+            id:DATA[index].data[count-1].id + 1
         }
         let temp = [...DATA];
         temp[index].data[count] = push
@@ -811,7 +830,7 @@ const Workout = ({ route }) => {
                         <View style={{alignItems:'center'}}>
                             <TextInput
                             keyboardType='numeric'
-                            style={{ fontSize:SIZES.body4,fontFamily:'RobotoBold'}}
+                            style={{ fontSize:SIZES.body4,fontFamily:'RobotoRegular'}}
                             onChangeText={(event)=>handleTime(event,index)}
                             value={DATA[index].data[0].time.toString()}
                             autoCompleteType='off'
@@ -954,7 +973,7 @@ const Workout = ({ route }) => {
                     />
                 </View>:<></>}
                 {   
-                    DATA[index].data[0].time!==null || !isEnabled[index]?
+                    !isEnabled[index]?
                     DATA[index].data.map((item,innerindex)=>rendersets(item,innerindex,index)):
                     renderAerobic(index)
                 }
