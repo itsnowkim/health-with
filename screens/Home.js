@@ -51,7 +51,8 @@ const Home = ( {navigation} ) => {
   function addWorkout(id){
     navigation.navigate("Workout",{
       name:`${selectedDate.month}월 ${selectedDate.date}일 ${koreaday[selectedDate.day]}요일`,
-      itemId: id
+      itemId: id,
+      date:selectedDate.dateString
     })
   }
 

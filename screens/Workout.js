@@ -17,6 +17,11 @@ import * as SQLite from 'expo-sqlite'
 import { GET_ALL_BY_WORKOUT_ID } from "./Report/ReportQueries";
 import { getDATAfromDB } from "../util/getDATAfromDB";
 import TagDb from '../model/Tag';
+import WorkoutDb from '../model/Workout';
+import SetsDb from '../model/Set';
+import SessionDb from '../model/Session';
+import Workout_Session_Tag from '../model/Workout_Session_Tag';
+import Session_Set from '../model/Session_Set';
 
 const Workout = ({ route }) => {
     const [isEnabled, setIsEnabled] = useState([false]);
@@ -30,7 +35,7 @@ const Workout = ({ route }) => {
         }
         //DATA 비우기
         let del = [...DATA]
-        del[index].data = [{rep:'',time:'',weight:'',lb:false}]
+        del[index].data = [{rep:'',time:'',weight:'',lb:0}]
         setDATA(del)
     }
     const [measure, setMeasure] = useState([false]);
@@ -146,7 +151,6 @@ const Workout = ({ route }) => {
             // get data from local storage
             console.log('수정')
             fetchData(itemId)
-
         }
         // 화면을 나갈 때 변경사항이 있는지 체크(저장할 경우 data가 바뀌므로)
         return () => {
@@ -155,11 +159,6 @@ const Workout = ({ route }) => {
         }
     }, []);
 
-    function saveDATAtoDB(){
-        console.log('db에 DATA에 있는 값 저장')
-        console.log(DATA)
-    }
-
     useEffect(()=>{
         if(route.params.saveButton){
             console.log('savebutton 누름(true)')
@@ -167,6 +166,61 @@ const Workout = ({ route }) => {
             saveDATAtoDB()
         }
     },[route.params.saveButton])
+
+    function saveWorkout(itemId,targetdate){
+        if(itemId===0){
+            WorkoutDb.create({date:targetdate})
+        }
+    }
+    function saveSession(title){
+        //존재하지 않는 title일 경우 추가
+        SessionDb.findBy({name_eq:title}).then(response => {
+            if(response === null){
+                SessionDb.create({name:title})
+            }else{
+                //console.log(response)
+            }
+        })
+    }
+    function saveSets(dataArr){
+        //존재하지 않는 set일 경우 추가
+        dataArr.map((i,j)=>{
+            if(i.time!==null){
+                SetsDb.findBy({time_eq:i.time})
+                .then(response=>{
+                    if(response === null){
+                        SetsDb.create({weight:i.weight,rep:i.rep, time:i.time, lb:i.lb})
+                    }
+                })
+            }else{
+                SetsDb.findBy({weight_eq:i.weight, rep_eq:i.rep, lb_eq:i.lb})
+                .then(response=>{
+                    if(response === null){
+                        SetsDb.create({weight:i.weight,rep:i.rep, time:i.time, lb:i.lb})
+                    }
+                })
+            }
+        })
+    }
+    function saveWorkoutSessionTag(){
+        console.log('saveWorkoutSessionTag')
+    }
+    function saveSessionSet(){
+        console.log('saveSessionSet')
+    }
+
+    function saveDATAtoDB(){
+        const target = [...DATA];
+        const {itemId} = route.params;
+
+        target.map((item,index)=>{
+            saveWorkout(itemId,route.params.date)
+            saveSession(item.title)
+            saveSets(item.data)
+            // saveWorkoutSessionTag(itemId)
+            // saveSessionSet(itemId)
+        })
+    }
 
     function deleteTag(){
         TagDb.destroy(tagUpdate.id)
@@ -373,7 +427,7 @@ const Workout = ({ route }) => {
             const temp = {
                 title:'',
                 tag:[],
-                data:[{rep:0,weight:0,time:null}]
+                data:[{rep:'',weight:'',time:null,lb:0,id:0}]
             }
             let res = [...DATA];
             res[index + 1] = temp

@@ -20,6 +20,7 @@ export default class Set extends BaseModel {
       weight: { type: types.FLOAT },
       rep: { type: types.INTEGER },
       time: { type: types.INTEGER },
+      lb: { type: types.INTEGER },
     }
   }
 }
