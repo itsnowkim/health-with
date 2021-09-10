@@ -15,7 +15,7 @@ import BottomSheet from 'reanimated-bottom-sheet';
 import DatabaseLayer from 'expo-sqlite-orm/src/DatabaseLayer'
 import * as SQLite from 'expo-sqlite'
 import { GET_ALL_BY_WORKOUT_ID } from "./Report/ReportQueries";
-import { getDATAfromDB, GET_WORKOUT_SESSION_TAG_BY_DATESTRING } from "../util/getDATAfromDB";
+import { getDATAfromDB, GET_SESSION_SET_BY_WORKOUTID, GET_WORKOUT_SESSION_TAG_BY_DATESTRING } from "../util/getDATAfromDB";
 import TagDb from '../model/Tag';
 import WorkoutDb from '../model/Workout';
 import SetsDb from '../model/Set';
@@ -170,8 +170,13 @@ const Workout = ({ route }) => {
 
     async function saveWorkout(itemId,targetdate){
         if(itemId===0){
-            let response = await WorkoutDb.create({date:targetdate})
-            return await response.id
+            let res = await WorkoutDb.findBy({date_eq:targetdate})
+            if(res === null){
+                let response = await WorkoutDb.create({date:targetdate})
+                return response.id
+            }else{
+                return res.id
+            }
         }else return itemId
     }
     async function saveSession(title){
@@ -184,33 +189,24 @@ const Workout = ({ route }) => {
             return response.id
         }
     }
-    async function saveSets(dataArr){
-        //존재하지 않는 set일 경우 추가
-        let res = []
-        await dataArr.map(async (i,j)=>{
-            if(i.time!==null){
-                // 유산소 운동의 경우
-                let response = await SetsDb.findBy({time_eq:i.time})
-                if(response === null){
-                    // 없다면 추가
-                    response = await SetsDb.create({weight:i.weight,rep:i.rep, time:i.time, lb:i.lb})
-                }
-                res = [...res,response.id]
-            }else{
-                // 무산소 운동의 경우
-                let response = await SetsDb.findBy({weight_eq:i.weight, rep_eq:i.rep, lb_eq:i.lb})
-                if(response === null){
-                    // 없다면 추가
-                    response = await SetsDb.create({weight:i.weight,rep:i.rep, time:i.time, lb:i.lb})
-                }
-                res = [...res,response.id]
+    async function saveSets(data){        
+        if(data.time!==null){
+            // 유산소 운동의 경우
+            let response = await SetsDb.findBy({time_eq:data.time})
+            if(response === null){
+                // 없다면 추가
+                response = await SetsDb.create({weight:data.weight,rep:data.rep, time:data.time, lb:data.lb})
             }
-            console.log(res)
-            //response에 return으로 set_id가 온다.
-            if(j===dataArr.length-1){
-                return res
+            return response.id
+        }else{
+            // 무산소 운동의 경우
+            let response = await SetsDb.findBy({weight_eq:data.weight, rep_eq:data.rep, lb_eq:data.lb})
+            if(response === null){
+                // 없다면 추가
+                response = await SetsDb.create({weight:data.weight,rep:data.rep, time:data.time, lb:data.lb})
             }
-        })
+            return response.id
+        }
     }
     async function saveWorkoutSessionTag(title,tag,exist,date){
         const title_id = await saveSession(title)
@@ -236,6 +232,7 @@ const Workout = ({ route }) => {
                 console.log('해당 날짜에 workout 존재')
             }
         })
+        return title_id
     }
     async function checkWorkoutSessionTag(date){
         const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('testDB.db'))
@@ -243,17 +240,31 @@ const Workout = ({ route }) => {
         let rows = await response.rows
         return rows
     }
-    async function saveSessionSet(sets_id,title, workoutid){
-        const title_id = await saveSession(title)
-        console.log(sets_id)
-        sets_id.map((i,j)=>{
+    async function checkSessionSets(id){
+        const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('testDB.db'))
+        let response = await databaseLayer.executeSql(GET_SESSION_SET_BY_WORKOUTID+`WHERE workout_id=${id}`)
+        let rows = await response.rows
+        return rows
+    }
+    async function saveSessionSet(data, title_id, workoutid, itemId){
+        console.log(workoutid,itemId)
+        // itemId가 0일 경우 비교필요 없음, 0이 아닐 경우 비교해야함
+
+        if(itemId!==0){
+            //비교시작해라
+        }else{
+            //비교할 필요 없이 새로 넣는거라서 그냥 무지성때려박기
+            data.map(async(i,j)=>{
+            console.log(i)
+            const set_id = await saveSets(i)
             const props = {
                 session_id: title_id,
-                set_id: i,
+                set_id: set_id,
                 workout_id: workoutid
             }
             Session_Set.create(props)
         })
+        }
     }
 
     async function saveDATAtoDB(){
@@ -265,15 +276,9 @@ const Workout = ({ route }) => {
         let workoutid = 0
 
         target.map(async(item,index)=>{
-            workoutid = await saveWorkout(itemId,date)
-            let set_id = await saveSets(item.data)
-            console.log('set_id:'+set_id)
-            // let temp = await set_id
-            // console.log(temp)
-
-            
-            // saveWorkoutSessionTag(item.title,item.tag,exist,workoutid)
-            // saveSessionSet(sets_id,item.title,workoutid,exist)
+            workoutid = await saveWorkout(itemId,date)            
+            const title_id = saveWorkoutSessionTag(item.title,item.tag,exist,workoutid)
+            saveSessionSet(item.data,title_id,workoutid,itemId)
         })
     }
 

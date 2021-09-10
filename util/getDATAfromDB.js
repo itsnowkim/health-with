@@ -37,3 +37,12 @@ JOIN workout_session_tag ON workout.id = workout_session_tag.workout_id
 JOIN session ON workout_session_tag.session_id = session.id
 JOIN tag ON workout_session_tag.tag_id = tag.id
 `
+export const GET_SESSION_SET_BY_WORKOUTID = `
+SELECT session_set.id, session_set.session_id,  sets.id AS set_id, workout_id
+FROM session
+JOIN session_set
+ON session.id = session_set.session_id
+JOIN sets
+ON sets.id = session_set.set_id
+`
+//WHERE workout_id=2
