@@ -36,5 +36,4 @@ FROM workout
 JOIN workout_session_tag ON workout.id = workout_session_tag.workout_id
 JOIN session ON workout_session_tag.session_id = session.id
 JOIN tag ON workout_session_tag.tag_id = tag.id
-WHERE workout.date
 `
