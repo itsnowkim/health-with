@@ -234,7 +234,6 @@ const Workout = ({ route }) => {
                 console.log('해당 날짜에 workout 존재')
             }
         })
-        return title_id
     }
     async function checkWorkoutSessionTag(date){
         // 해당 날짜에 workout_session_tag rows가 있으면 리턴, 없으면 []리턴
@@ -249,25 +248,30 @@ const Workout = ({ route }) => {
         let rows = await response.rows
         return rows
     }
-    async function saveSessionSet(data, title_id, workoutid, itemId){
+    async function saveSessionSet(data, title, workoutid, itemId){
+        const title_id = await saveSession(title)
+        console.log('title_id : ' + title_id)
         console.log(workoutid,itemId)
         // itemId가 0일 경우 비교필요 없음, 0이 아닐 경우 비교해야함
 
         if(itemId!==0){
             //비교시작해라
+            //checkSessionSets
         }else{
             //비교할 필요 없이 새로 넣는거라서 그냥 무지성때려박기
             console.log('관계형데이터베이스 테이블 session set에 추가')
+            //set 개수만큼 map -> 한 줄씩 넣기.
             data.map(async(i,j)=>{
-            console.log(i)
-            const set_id = await saveSets(i)
-            const props = {
-                session_id: title_id,
-                set_id: set_id,
-                workout_id: workoutid
-            }
-            await Session_Set.create(props)
-        })
+                const set_id = await saveSets(i)
+                console.log('set_id : ')
+                console.log(set_id)
+                const props = {
+                    session_id: title_id,
+                    set_id: set_id,
+                    workout_id: workoutid
+                }
+                await Session_Set.create(props)
+            })
         }
     }
 
@@ -282,9 +286,8 @@ const Workout = ({ route }) => {
         target.map(async(item,index)=>{
             let workoutid = await saveWorkout(itemId,date)      
             //ok
-
-            const title_id = saveWorkoutSessionTag(item.title,item.tag,exist,workoutid)
-            saveSessionSet(item.data,title_id,workoutid,itemId)
+            saveWorkoutSessionTag(item.title,item.tag,exist,workoutid)
+            saveSessionSet(item.data,item.title,workoutid,itemId)
         })
     }
 
