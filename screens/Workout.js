@@ -180,7 +180,7 @@ const Workout = ({ route }) => {
         }else return itemId
     }
     async function saveSession(title){
-        //존재하지 않는 title일 경우 추가
+        //존재하지 않는 title일 경우 추가후 해당 id 리턴
         let response = await SessionDb.findBy({name_eq:title})
         if(response === null){
             let res = await SessionDb.create({name:title})
@@ -210,6 +210,7 @@ const Workout = ({ route }) => {
     }
     async function saveWorkoutSessionTag(title,tag,exist,date){
         const title_id = await saveSession(title)
+        // ok
         let tagId = [0]
         if(tag.length !== 0){
             tagId = []
@@ -217,15 +218,16 @@ const Workout = ({ route }) => {
                 tagId = [...tagId,i.id]
             })
         }
-        tag.map((i)=>{
+        tag.map(async(i)=>{
             if(exist.length === 0){
+                console.log('관계형 데이터베이스 테이블에 넣기')
                 // 해당 날짜에 운동기록 없으니까 쏙쏙 넣어줘야함
                 const props = {
                    workout_id: date,
                    session_id: title_id,
                    tag_id:tagId
                 }
-                Workout_Session_Tag.create(props)
+                await Workout_Session_Tag.create(props)
             }else{
                 // 운동 기록을 수정하는 경우
                 // 비교해서 사라진거 -> 삭제, 새로 생긴거 추가
@@ -235,6 +237,7 @@ const Workout = ({ route }) => {
         return title_id
     }
     async function checkWorkoutSessionTag(date){
+        // 해당 날짜에 workout_session_tag rows가 있으면 리턴, 없으면 []리턴
         const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('testDB.db'))
         let response = await databaseLayer.executeSql(GET_WORKOUT_SESSION_TAG_BY_DATESTRING+`WHERE workout.date='${date}'`)
         let rows = await response.rows
@@ -254,6 +257,7 @@ const Workout = ({ route }) => {
             //비교시작해라
         }else{
             //비교할 필요 없이 새로 넣는거라서 그냥 무지성때려박기
+            console.log('관계형데이터베이스 테이블 session set에 추가')
             data.map(async(i,j)=>{
             console.log(i)
             const set_id = await saveSets(i)
@@ -262,7 +266,7 @@ const Workout = ({ route }) => {
                 set_id: set_id,
                 workout_id: workoutid
             }
-            Session_Set.create(props)
+            await Session_Set.create(props)
         })
         }
     }
@@ -273,10 +277,12 @@ const Workout = ({ route }) => {
         const {date} = route.params
 
         const exist = await checkWorkoutSessionTag(date)
-        let workoutid = 0
 
+        // session 개수만큼 map
         target.map(async(item,index)=>{
-            workoutid = await saveWorkout(itemId,date)            
+            let workoutid = await saveWorkout(itemId,date)      
+            //ok
+
             const title_id = saveWorkoutSessionTag(item.title,item.tag,exist,workoutid)
             saveSessionSet(item.data,title_id,workoutid,itemId)
         })
