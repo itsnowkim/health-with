@@ -190,6 +190,8 @@ const Workout = ({ route }) => {
         }
     }
     async function saveSets(data){
+        console.log('saveSets 들어옴')
+        let result = []
         data.map(async(i,j)=>{
             if(i.time!==null){
                 // 유산소 운동의 경우
@@ -199,6 +201,8 @@ const Workout = ({ route }) => {
                     response = await SetsDb.create({weight:i.weight,rep:i.rep, time:i.time, lb:i.lb})
                 }
                 console.log(response.id)
+                result = [...result,response.id]
+                console.log(result)
             }else{
                 // 무산소 운동의 경우
                 let response = await SetsDb.findBy({weight_eq:i.weight, rep_eq:i.rep, lb_eq:i.lb})
@@ -207,7 +211,68 @@ const Workout = ({ route }) => {
                     response = await SetsDb.create({weight:i.weight,rep:i.rep, time:i.time, lb:i.lb})
                 }
                 console.log(response.id)
+                result = [...result,response.id]
+                console.log(result)
             }
+            if(j===data.length-1){
+                console.log('result : ')
+                console.log(result)
+                return result
+            }
+            // 같은 값이 중복으로 들어가는 경우 방지
+            // if(j>=1){
+            //     if(i === data[j]){
+            //         result = [...result,result[j-1]]
+            //     }else{
+            //         if(i.time!==null){
+            //             // 유산소 운동의 경우
+            //             let response = await SetsDb.findBy({time_eq:i.time})
+            //             if(response === null){
+            //                 // 없다면 추가
+            //                 response = await SetsDb.create({weight:i.weight,rep:i.rep, time:i.time, lb:i.lb})
+            //             }
+            //             console.log(response.id)
+            //             result = [...result,response.id]
+            //             console.log(result)
+            //         }else{
+            //             // 무산소 운동의 경우
+            //             let response = await SetsDb.findBy({weight_eq:i.weight, rep_eq:i.rep, lb_eq:i.lb})
+            //             if(response === null){
+            //                 // 없다면 추가
+            //                 response = await SetsDb.create({weight:i.weight,rep:i.rep, time:i.time, lb:i.lb})
+            //             }
+            //             console.log(response.id)
+            //             result = [...result,response.id]
+            //             console.log(result)
+            //         }
+            //     }
+            // }else{
+            //     if(i.time!==null){
+            //         // 유산소 운동의 경우
+            //         let response = await SetsDb.findBy({time_eq:i.time})
+            //         if(response === null){
+            //             // 없다면 추가
+            //             response = await SetsDb.create({weight:i.weight,rep:i.rep, time:i.time, lb:i.lb})
+            //         }
+            //         console.log(response.id)
+            //         result = [...result,response.id]
+            //         console.log(result)
+            //     }else{
+            //         // 무산소 운동의 경우
+            //         let response = await SetsDb.findBy({weight_eq:i.weight, rep_eq:i.rep, lb_eq:i.lb})
+            //         if(response === null){
+            //             // 없다면 추가
+            //             response = await SetsDb.create({weight:i.weight,rep:i.rep, time:i.time, lb:i.lb})
+            //         }
+            //         console.log(response.id)
+            //         result = [...result,response.id]
+            //         console.log(result)
+            //     }
+            // }
+            // if(j===data.length-1){
+            //     console.log('res:')
+            //     console.log(result)
+            // }
         })
     }
     async function saveWorkoutSessionTag(title,tag,exist,date){
@@ -220,14 +285,14 @@ const Workout = ({ route }) => {
                 tagId = [...tagId,i.id]
             })
         }
-        tag.map(async(i)=>{
+        tagId.map(async(i)=>{
             if(exist.length === 0){
                 console.log('관계형 데이터베이스 테이블에 넣기')
                 // 해당 날짜에 운동기록 없으니까 쏙쏙 넣어줘야함
                 const props = {
                    workout_id: date,
                    session_id: title_id,
-                   tag_id:tagId
+                   tag_id:i
                 }
                 await Workout_Session_Tag.create(props)
             }else{
@@ -264,17 +329,18 @@ const Workout = ({ route }) => {
             //비교할 필요 없이 새로 넣는거라서 그냥 무지성때려박기
             console.log('관계형데이터베이스 테이블 session set에 추가')
             //set 개수만큼 map -> 한 줄씩 넣기.
-            await saveSets(data)
-            // data.map(async(i)=>{
-            //     console.log('set_id : ')
-            //     console.log(set_id)
-            //     const props = {
-            //         session_id: title_id,
-            //         set_id: //등록ㅚ set들의 id들,
-            //         workout_id: workoutid
-            //     }
-            //     await Session_Set.create(props)
-            // })
+            saveSets(data).then((set_id)=>{
+                data.map(async(i)=>{
+                    console.log('set_id : ')
+                    console.log(set_id)
+                    const props = {
+                        session_id: title_id,
+                        set_id: set_id,
+                        workout_id: workoutid
+                    }
+                    await Session_Set.create(props)
+                })      
+            })
         }
     }
 
