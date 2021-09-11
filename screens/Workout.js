@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Switch, TextInput, Alert } from "react-native";
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Switch, TextInput, Alert, Button } from "react-native";
 import { ScrollView } from 'react-native-gesture-handler';
 import { COLORS, SIZES } from '../constants';
 import Line3 from '../components/Line3';
@@ -189,24 +189,26 @@ const Workout = ({ route }) => {
             return response.id
         }
     }
-    async function saveSets(data){        
-        if(data.time!==null){
-            // 유산소 운동의 경우
-            let response = await SetsDb.findBy({time_eq:data.time})
-            if(response === null){
-                // 없다면 추가
-                response = await SetsDb.create({weight:data.weight,rep:data.rep, time:data.time, lb:data.lb})
+    async function saveSets(data){
+        data.map(async(i,j)=>{
+            if(i.time!==null){
+                // 유산소 운동의 경우
+                let response = await SetsDb.findBy({time_eq:i.time})
+                if(response === null){
+                    // 없다면 추가
+                    response = await SetsDb.create({weight:i.weight,rep:i.rep, time:i.time, lb:i.lb})
+                }
+                console.log(response.id)
+            }else{
+                // 무산소 운동의 경우
+                let response = await SetsDb.findBy({weight_eq:i.weight, rep_eq:i.rep, lb_eq:i.lb})
+                if(response === null){
+                    // 없다면 추가
+                    response = await SetsDb.create({weight:i.weight,rep:i.rep, time:i.time, lb:i.lb})
+                }
+                console.log(response.id)
             }
-            return response.id
-        }else{
-            // 무산소 운동의 경우
-            let response = await SetsDb.findBy({weight_eq:data.weight, rep_eq:data.rep, lb_eq:data.lb})
-            if(response === null){
-                // 없다면 추가
-                response = await SetsDb.create({weight:data.weight,rep:data.rep, time:data.time, lb:data.lb})
-            }
-            return response.id
-        }
+        })
     }
     async function saveWorkoutSessionTag(title,tag,exist,date){
         const title_id = await saveSession(title)
@@ -234,6 +236,7 @@ const Workout = ({ route }) => {
                 console.log('해당 날짜에 workout 존재')
             }
         })
+        return title_id
     }
     async function checkWorkoutSessionTag(date){
         // 해당 날짜에 workout_session_tag rows가 있으면 리턴, 없으면 []리턴
@@ -248,10 +251,10 @@ const Workout = ({ route }) => {
         let rows = await response.rows
         return rows
     }
-    async function saveSessionSet(data, title, workoutid, itemId){
-        const title_id = await saveSession(title)
-        console.log('title_id : ' + title_id)
-        console.log(workoutid,itemId)
+    async function saveSessionSet(data, title_id, workoutid, itemId){
+        // const title_id = await saveSession(title)
+        // console.log('title_id : ' + title_id)
+        // console.log(workoutid,itemId)
         // itemId가 0일 경우 비교필요 없음, 0이 아닐 경우 비교해야함
 
         if(itemId!==0){
@@ -261,17 +264,17 @@ const Workout = ({ route }) => {
             //비교할 필요 없이 새로 넣는거라서 그냥 무지성때려박기
             console.log('관계형데이터베이스 테이블 session set에 추가')
             //set 개수만큼 map -> 한 줄씩 넣기.
-            data.map(async(i,j)=>{
-                const set_id = await saveSets(i)
-                console.log('set_id : ')
-                console.log(set_id)
-                const props = {
-                    session_id: title_id,
-                    set_id: set_id,
-                    workout_id: workoutid
-                }
-                await Session_Set.create(props)
-            })
+            await saveSets(data)
+            // data.map(async(i)=>{
+            //     console.log('set_id : ')
+            //     console.log(set_id)
+            //     const props = {
+            //         session_id: title_id,
+            //         set_id: //등록ㅚ set들의 id들,
+            //         workout_id: workoutid
+            //     }
+            //     await Session_Set.create(props)
+            // })
         }
     }
 
@@ -286,8 +289,9 @@ const Workout = ({ route }) => {
         target.map(async(item,index)=>{
             let workoutid = await saveWorkout(itemId,date)      
             //ok
-            saveWorkoutSessionTag(item.title,item.tag,exist,workoutid)
-            saveSessionSet(item.data,item.title,workoutid,itemId)
+
+            const title_id = await saveWorkoutSessionTag(item.title,item.tag,exist,workoutid)
+            saveSessionSet(item.data,title_id,workoutid,itemId)
         })
     }
 
@@ -1129,6 +1133,56 @@ const Workout = ({ route }) => {
     //     )
     // }
 
+    function showWorkout (){
+        const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('testDB.db'))
+        databaseLayer.executeSql(`SELECT * FROM workout`)
+        .then((response) => {
+            console.log(response.rows)
+        })
+    }
+    function showSession (){
+        const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('testDB.db'))
+        databaseLayer.executeSql(`SELECT * FROM session`)
+        .then((response) => {
+            console.log(response.rows)
+        })
+    }
+    function showSets (){
+        const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('testDB.db'))
+        databaseLayer.executeSql(`SELECT * FROM sets`)
+        .then((response) => {
+            console.log(response.rows)
+        })
+    }
+    function showTag (){
+        const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('testDB.db'))
+        databaseLayer.executeSql(`SELECT * FROM tag`)
+        .then((response) => {
+            console.log(response.rows)
+        })
+    }
+    function showWST (){
+        const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('testDB.db'))
+        databaseLayer.executeSql(`SELECT * FROM workout_session_tag`)
+        .then((response) => {
+            console.log(response.rows)
+        })
+    }
+    function showSS (){
+        const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('testDB.db'))
+        databaseLayer.executeSql(`SELECT * FROM session_set`)
+        .then((response) => {
+            console.log(response.rows)
+        })
+    }
+    function showAll (){
+        const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('testDB.db'))
+        databaseLayer.executeSql(GET_ALL_BY_WORKOUT_ID+`WHERE workout.id=2`)
+        .then((response) => {
+            console.log(response.rows)
+        })
+    }
+
     function renderForm(data,index){
         return(
             isRendered()?
@@ -1168,6 +1222,48 @@ const Workout = ({ route }) => {
                             DATA.map((data,index)=>renderForm(data,index))
                         }
                     </View>
+                    <Button
+                        onPress={showWorkout}
+                        title="show workout"
+                        color="#841584"
+                        accessibilityLabel="Learn more about this purple button"
+                    />
+                    <Button
+                        onPress={showSession}
+                        title="show Session"
+                        color="#841584"
+                        accessibilityLabel="Learn more about this purple button"
+                    />
+                    <Button
+                        onPress={showSets}
+                        title="show sets"
+                        color="#841584"
+                        accessibilityLabel="Learn more about this purple button"
+                    />
+                    <Button
+                        onPress={showTag}
+                        title="show tag"
+                        color="#841584"
+                        accessibilityLabel="Learn more about this purple button"
+                    />
+                    <Button
+                        onPress={showWST}
+                        title="show workout session tag"
+                        color="#841584"
+                        accessibilityLabel="Learn more about this purple button"
+                    />
+                    <Button
+                        onPress={showSS}
+                        title="show session set"
+                        color="#841584"
+                        accessibilityLabel="Learn more about this purple button"
+                    />
+                    <Button
+                        onPress={showAll}
+                        title="show All"
+                        color="#841584"
+                        accessibilityLabel="Learn more about this purple button"
+                    />
                     <View style={{height:600}}></View>
                 </ScrollView>
             </SafeAreaView>
