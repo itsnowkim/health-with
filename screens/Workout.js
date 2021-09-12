@@ -190,6 +190,41 @@ const Workout = ({ route }) => {
         }
     }
     async function saveSets(data){
+        return new Promise((resolve)=>{
+            function getdata(){
+                let result = []
+                data.map(async(i,j)=>{
+                    if(i.time!==null){
+                        // 유산소 운동의 경우
+                        let response = await SetsDb.findBy({time_eq:i.time})
+                        if(response === null){
+                            // 없다면 추가
+                            response = await SetsDb.create({weight:i.weight,rep:i.rep, time:i.time, lb:i.lb})
+                        }
+                        console.log(response.id)
+                        result = [...result,response.id]
+                        console.log(result)
+                    }else{
+                        // 무산소 운동의 경우
+                        let response = await SetsDb.findBy({weight_eq:i.weight, rep_eq:i.rep, lb_eq:i.lb})
+                        if(response === null){
+                            // 없다면 추가
+                            response = await SetsDb.create({weight:i.weight,rep:i.rep, time:i.time, lb:i.lb})
+                        }
+                        console.log(response.id)
+                        result = [...result,response.id]
+                        console.log(result)
+                    }
+                    if(j===data.length-1){
+                        console.log('result : ')
+                        console.log(result)
+                        resolve(result)
+                    }
+                })
+            }
+            getdata()
+        })
+
         console.log('saveSets 들어옴')
         let result = []
         data.map(async(i,j)=>{
