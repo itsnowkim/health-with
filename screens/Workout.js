@@ -108,7 +108,7 @@ const Workout = ({ route }) => {
 
     function fetchData(itemId){
         // db에서 DATA 가져와서 넣기        
-        const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('testDB.db'))
+        const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('upgradeDB.db'))
         databaseLayer.executeSql(GET_ALL_BY_WORKOUT_ID+`WHERE workout.id=${itemId}`)
         .then((response) => {
             console.log('몇번?')
@@ -340,13 +340,13 @@ const Workout = ({ route }) => {
     }
     async function checkWorkoutSessionTag(date){
         // 해당 날짜에 workout_session_tag rows가 있으면 리턴, 없으면 []리턴
-        const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('testDB.db'))
+        const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('upgradeDB.db'))
         let response = await databaseLayer.executeSql(GET_WORKOUT_SESSION_TAG_BY_DATESTRING+`WHERE workout.date='${date}'`)
         let rows = await response.rows
         return rows
     }
     async function checkSessionSets(id){
-        const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('testDB.db'))
+        const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('upgradeDB.db'))
         let response = await databaseLayer.executeSql(GET_SESSION_SET_BY_WORKOUTID+`WHERE workout_id=${id}`)
         let rows = await response.rows
         return rows
@@ -398,7 +398,7 @@ const Workout = ({ route }) => {
 
     function deleteTag(){
         TagDb.destroy(tagUpdate.id)
-        const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('testDB.db'))
+        const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('upgradeDB.db'))
         databaseLayer.executeSql(`DELETE FROM workout_session_tag WHERE tag_id=${tagUpdate.id}`)
         
         const temp = AllTag.filter((i,j)=>j!==tagUpdate.index);
@@ -1235,49 +1235,49 @@ const Workout = ({ route }) => {
     // }
 
     function showWorkout (){
-        const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('testDB.db'))
+        const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('upgradeDB.db'))
         databaseLayer.executeSql(`SELECT * FROM workout`)
         .then((response) => {
             console.log(response.rows)
         })
     }
     function showSession (){
-        const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('testDB.db'))
+        const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('upgradeDB.db'))
         databaseLayer.executeSql(`SELECT * FROM session`)
         .then((response) => {
             console.log(response.rows)
         })
     }
     function showSets (){
-        const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('testDB.db'))
+        const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('upgradeDB.db'))
         databaseLayer.executeSql(`SELECT * FROM sets`)
         .then((response) => {
             console.log(response.rows)
         })
     }
     function showTag (){
-        const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('testDB.db'))
+        const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('upgradeDB.db'))
         databaseLayer.executeSql(`SELECT * FROM tag`)
         .then((response) => {
             console.log(response.rows)
         })
     }
     function showWST (){
-        const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('testDB.db'))
+        const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('upgradeDB.db'))
         databaseLayer.executeSql(`SELECT * FROM workout_session_tag`)
         .then((response) => {
             console.log(response.rows)
         })
     }
     function showSS (){
-        const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('testDB.db'))
+        const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('upgradeDB.db'))
         databaseLayer.executeSql(`SELECT * FROM session_set`)
         .then((response) => {
             console.log(response.rows)
         })
     }
     function showAll (){
-        const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('testDB.db'))
+        const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('upgradeDB.db'))
         databaseLayer.executeSql(GET_ALL_BY_WORKOUT_ID+`WHERE workout.id=2`)
         .then((response) => {
             console.log(response.rows)

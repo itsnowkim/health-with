@@ -46,8 +46,8 @@ const App = () => {
   useEffect(() => {
     const copyDB = async () => {
       await FileSystem.downloadAsync(
-        Asset.fromModule(require('./db/testDB.db')).uri,
-        FileSystem.documentDirectory + 'SQLite/testDB.db'
+        Asset.fromModule(require('./db/upgradeDB.db')).uri,
+        FileSystem.documentDirectory + 'SQLite/upgradeDB.db'
       )
     }
     copyDB();
