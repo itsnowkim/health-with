@@ -35,7 +35,6 @@ const WorkoutCard = ({DATA}) => {
 
     function rendersets(item) {
         return item.map((data,index)=>{
-            console.log(data)
             return(
                 <View key={index} style={{flexDirection:'row',marginVertical:1, justifyContent:'space-around'}}>
                     {data.time !== null ?

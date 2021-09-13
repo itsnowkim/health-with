@@ -80,12 +80,12 @@ const Workout = ({ route }) => {
     const [tagCustomize,setTagCustomize] = useState({
         name:'',
         color:'#B54B4B',
-        id:0
+        id:1
     })
     const [tagUpdate,setTagUpdate] = useState({
         name: '',
         color: '',
-        id:0,
+        id:1,
         index: null
     })
     const [firstAngle,setFirstAngle] = useState(false)
@@ -95,7 +95,7 @@ const Workout = ({ route }) => {
     const [DATA,setDATA] = useState([
         {
             title:'',
-            tag:[{name:'',color:'',id:0}],
+            tag:[{name:'',color:'',id:1}],
             data:[{lb:0,rep:'',weight:'',time:null,id:0}]
         }
     ])
@@ -327,6 +327,7 @@ const Workout = ({ route }) => {
                 // 운동 기록을 수정하는 경우
                 // 비교해서 사라진거 -> 삭제, 새로 생긴거 추가
                 console.log('해당 날짜에 workout 존재')
+
             }
         })
         return title_id
@@ -376,13 +377,11 @@ const Workout = ({ route }) => {
         const {date} = route.params
 
         const exist = await checkWorkoutSessionTag(date)
+        let workoutid = await saveWorkout(itemId,date)
 
         // session 개수만큼 map
         console.log(target)
         target.map(async(item,index)=>{
-            let workoutid = await saveWorkout(itemId,date)      
-            //ok
-
             const title_id = await saveWorkoutSessionTag(item.title,item.tag,exist,workoutid)
             saveSessionSet(item.data,title_id,workoutid,itemId)
         })
@@ -398,7 +397,7 @@ const Workout = ({ route }) => {
         setTagUpdate({
             name: '',
             color: '',
-            id:0,
+            id:1,
             index: null
         })
         handleTagDelete(whichTag,tagUpdate.index)
@@ -562,7 +561,7 @@ const Workout = ({ route }) => {
         if(tagCustomize.name !== ''){
             console.log(tagCustomize)
             setAllTag(prevArr => [...prevArr,{name:tagCustomize.name,color:tagCustomize.color,id:tagCustomize.id}])
-            setTagCustomize({name:'',color:'#B54B4B'})
+            setTagCustomize({name:'',color:'#B54B4B',id:1})
             // db에 수정된 데이터 upload
             TagDb.create({name:tagCustomize.name,color:tagCustomize.color})
         }
@@ -592,7 +591,7 @@ const Workout = ({ route }) => {
         if(DATA[index].title !== ''){
             const temp = {
                 title:'',
-                tag:[],
+                tag:[{name:'',color:'',id:1}],
                 data:[{rep:'',weight:'',time:null,lb:0,id:0}]
             }
             let res = [...DATA];
@@ -627,7 +626,7 @@ const Workout = ({ route }) => {
     function deleteWorkout(index){
         console.log('삭제버튼 누름')
         if(DATA.length === 1){
-            setDATA([{title:'',tag:[],data:[{rep:'',weight:'',time:''}]}])
+            setDATA([{title:'',tag:[{name:'',color:'',id:1}],data:[{rep:'',weight:'',time:''}]}])
             //angle state 처리
             setIsPressed([{data:[false]}])
             setMeasure([false])
