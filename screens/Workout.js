@@ -206,7 +206,6 @@ const Workout = ({ route }) => {
                         // 무산소 운동의 경우
                         let response = await SetsDb.findBy({weight_eq:i.weight, rep_eq:i.rep, lb_eq:i.lb})
                         if(response === null){
-                            // 없다면 추가
                             response = await SetsDb.create({weight:i.weight,rep:i.rep, time:i.time, lb:i.lb})
                         }
                         result = [...result,response.id]
@@ -379,6 +378,7 @@ const Workout = ({ route }) => {
         const exist = await checkWorkoutSessionTag(date)
 
         // session 개수만큼 map
+        console.log(target)
         target.map(async(item,index)=>{
             let workoutid = await saveWorkout(itemId,date)      
             //ok
@@ -484,9 +484,8 @@ const Workout = ({ route }) => {
         }
     }
     function handleTagCustomizeAdd(event,color){
-        const id = AllTag.length+1
+        const id = AllTag.length+2
         setTagCustomize({name:event,color:color,id:id})
-
     }
 
     function delSets(index,innerindex){
@@ -561,6 +560,7 @@ const Workout = ({ route }) => {
     //setAllTag()에 수정된 데이터 push
     function addNewTag(){
         if(tagCustomize.name !== ''){
+            console.log(tagCustomize)
             setAllTag(prevArr => [...prevArr,{name:tagCustomize.name,color:tagCustomize.color,id:tagCustomize.id}])
             setTagCustomize({name:'',color:'#B54B4B'})
             // db에 수정된 데이터 upload
