@@ -7,7 +7,7 @@ export default class Session_Set extends BaseModel {
   }
 
   static get database() {
-    return async () => SQLite.openDatabase('testDB.db')
+    return async () => SQLite.openDatabase('upgradeDB.db')
   }
 
   static get tableName() {
@@ -19,6 +19,7 @@ export default class Session_Set extends BaseModel {
       id: { type: types.INTEGER, primary_key: true },
       session_id: { type: types.INTEGER },
       set_id: { type: types.INTEGER },
+      workout_id:{ type: types.INTEGER }
     }
   }
 }

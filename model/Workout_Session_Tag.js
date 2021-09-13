@@ -7,7 +7,7 @@ export default class Workout_Session_Tag extends BaseModel {
   }
 
   static get database() {
-    return async () => SQLite.openDatabase('testDB.db')
+    return async () => SQLite.openDatabase('upgradeDB.db')
   }
 
   static get tableName() {

@@ -51,7 +51,8 @@ const Home = ( {navigation} ) => {
   function addWorkout(id){
     navigation.navigate("Workout",{
       name:`${selectedDate.month}월 ${selectedDate.date}일 ${koreaday[selectedDate.day]}요일`,
-      itemId: id
+      itemId: id,
+      date:selectedDate.dateString
     })
   }
 
@@ -81,6 +82,7 @@ const Home = ( {navigation} ) => {
       // props에 해당하는 workout id 찾기
       const setData = async () => {
         let res1 = await Workout.findBy({date_eq:props})
+        console.log(res1)
         if(res1 === null){
           setWorkout({id:0,dateString:props})
           setSchedule(0)
@@ -88,7 +90,7 @@ const Home = ( {navigation} ) => {
           setSchedule(1)
           setWorkout(res1)
           // 세션 이름, 태그 + 세트 수까지 다 가져와야함
-          const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('testDB.db'))
+          const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('upgradeDB.db'))
           databaseLayer.executeSql(GET_ALL_BY_WORKOUT_ID+`WHERE workout.id=${res1.id}`)
           .then((response) => {
             const responseList = response.rows
@@ -158,7 +160,7 @@ const Home = ( {navigation} ) => {
 
   function noSchedule() {
     return (
-      <View style={{marginTop:SIZES.padding,height:'90%',justifyContent:'center',alignItems:'center', backgroundColor:COLORS.lightGray}}>
+      <View style={{marginTop:SIZES.padding,height:SIZES.height/2,justifyContent:'center',alignItems:'center', backgroundColor:COLORS.lightGray}}>
       </View>
     )
   }

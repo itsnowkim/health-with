@@ -13,11 +13,12 @@ import RemoveAd from "./screens/Detail/RemoveAd";
 import SendIdea from "./screens/Detail/SendIdea";
 import SendReview from "./screens/Detail/SendReview";
 import { Alert } from "react-native";
+import { FontAwesome } from '@expo/vector-icons';
 
 // font 적용
 import { useFonts } from 'expo-font';
 import { COLORS, SIZES } from "./constants";
-import { Button, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 
 // import existing db
 import * as FileSystem from 'expo-file-system';
@@ -42,15 +43,17 @@ function getHeaderTitle(route) {
 
 const App = () => {
   //copy .db file
-  // useEffect(() => {
-  //   const copyDB = async () => {
-  //     await FileSystem.downloadAsync(
-  //       Asset.fromModule(require('./db/testDB.db')).uri,
-  //       FileSystem.documentDirectory + 'SQLite/testDB.db'
-  //     )
-  //   }
-  //   copyDB();
-  // }, [])
+  useEffect(() => {
+    const copyDB = async () => {
+      await FileSystem.downloadAsync(
+        Asset.fromModule(require('./db/upgradeDB.db')).uri,
+        FileSystem.documentDirectory + 'SQLite/upgradeDB.db'
+      )
+    }
+    copyDB();
+  }, [])
+
+// push test
 
   // key name으로 fontfaily 적용가능.
   const [loaded] = useFonts({
@@ -83,17 +86,36 @@ const App = () => {
         
         <Stack.Screen
           name="Workout"
-          component={Workout} 
-          options={({ route }) => ({ 
+          component={Workout}
+          options={({ route,navigation }) => ({ 
             title: route.params.name,
             headerRight: () => (
-              // <Button
-              //   onPress={() => alert('This is a button!')}
-              //   title="저장"
-              //   color="red"
-              // />
-              <TouchableOpacity onPress={()=>alert('저장 누름')}>
-                <Text style={{color:COLORS.primary, fontSize:SIZES.h4, marginRight:SIZES.padding}}>저장</Text>
+              <TouchableOpacity onPress={()=>{
+                Alert.alert(
+                  `${route.params.name} 운동`,
+                  "저장하시겠습니까?",
+                  [
+                    {
+                      text: "Cancel",
+                      onPress: () =>  navigation.setParams({saveButton:false}),
+                      style: "cancel"
+                    },
+                    { text: "OK", onPress: () => navigation.setParams({saveButton:true})}
+                  ],
+                  { cancelable: false }
+                );
+              }}>
+                <Text style={{color:COLORS.primary, fontSize:17, marginRight:SIZES.padding}}>저장</Text>
+              </TouchableOpacity>
+            ),
+            headerLeft: () => (
+              <TouchableOpacity style={{flexDirection:'row',alignItems:'center'}} onPress={()=>navigation.goBack()}>
+                <FontAwesome
+                  name="angle-left"
+                  color={COLORS.primary}
+                  style={{transform: [{ scaleX: 2 }, { scaleY: 2 }],marginLeft:SIZES.padding}}
+                />
+                <Text style={{fontSize:17, marginLeft:SIZES.padding}}>캘린더</Text>
               </TouchableOpacity>
             )
           })}

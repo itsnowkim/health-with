@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from "react";
 import { StyleSheet, View, Text, TouchableOpacity} from "react-native";
 import { COLORS, SIZES } from "../constants";
+import Line3 from "./Line3";
 
 import Tag from "./Tag";
 
@@ -30,7 +31,7 @@ const WorkoutCard = ({DATA}) => {
     }
 
     return DATA.map((item,index)=>{
-        console.log(item)
+        //console.log(item)
         return(
             <View key={index} style={styles.container}>
                 <TouchableOpacity onPress={onPress} style={styles.item}>
@@ -42,15 +43,8 @@ const WorkoutCard = ({DATA}) => {
                         ))}
                         </>
                     </View>
-                    <View
-                        style={{
-                            height: 1,
-                            width: "100%",
-                            backgroundColor: COLORS.lightGray3,
-                            marginTop:SIZES.padding/2
-                        }}
-                    />
-                    <View style={{marginTop:SIZES.padding}}>
+                    <Line3/>
+                    <View style={{marginTop:SIZES.padding/2}}>
                         {rendersets(item)}
                     </View>
                 </TouchableOpacity>

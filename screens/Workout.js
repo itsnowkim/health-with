@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Switch, TextInput, Alert } from "react-native";
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Switch, TextInput, Alert, Button } from "react-native";
 import { ScrollView } from 'react-native-gesture-handler';
 import { COLORS, SIZES } from '../constants';
 import Line3 from '../components/Line3';
@@ -15,11 +15,15 @@ import BottomSheet from 'reanimated-bottom-sheet';
 import DatabaseLayer from 'expo-sqlite-orm/src/DatabaseLayer'
 import * as SQLite from 'expo-sqlite'
 import { GET_ALL_BY_WORKOUT_ID } from "./Report/ReportQueries";
-import { getDATAfromDB } from "../util/getDATAfromDB";
+import { getDATAfromDB, GET_SESSION_SET_BY_WORKOUTID, GET_WORKOUT_SESSION_TAG_BY_DATESTRING } from "../util/getDATAfromDB";
+import TagDb from '../model/Tag';
+import WorkoutDb from '../model/Workout';
+import SetsDb from '../model/Set';
+import SessionDb from '../model/Session';
+import Workout_Session_Tag from '../model/Workout_Session_Tag';
+import Session_Set from '../model/Session_Set';
 
 const Workout = ({ route }) => {
-    const [loaded,setLoaded] = useState(false);
-
     const [isEnabled, setIsEnabled] = useState([false]);
     const toggleSwitch = (index) => {
         let temp = [...isEnabled];
@@ -29,10 +33,9 @@ const Workout = ({ route }) => {
         if(measure[index] === true){
             toggleMeasure(index)
         }
-
         //DATA 비우기
         let del = [...DATA]
-        del[index].data = [{rep:'',time:'',weight:''}]
+        del[index].data = [{rep:'',time:'',weight:'',lb:0}]
         setDATA(del)
     }
     const [measure, setMeasure] = useState([false]);
@@ -40,6 +43,17 @@ const Workout = ({ route }) => {
         let temp = [...measure];
         temp[index] = !temp[index]
         setMeasure(temp)
+
+        let arr = [...DATA];
+        arr[index].data.map((i,j)=>{
+            if(i.lb === 0){
+                arr[index].data[j].lb = 1
+            }else{
+                arr[index].data[j].lb = 0
+            }
+        })
+        console.log(arr)
+        setDATA(arr)
 
         if(isEnabled[index]=== true){
             toggleSwitch(index)
@@ -51,7 +65,7 @@ const Workout = ({ route }) => {
 
     const togglePressed = (index,innerindex) => {
         let temp = [...isPressed];
-        console.log(index,innerindex)
+        //console.log(index,innerindex)
 
         temp[index].data[innerindex] = !temp[index].data[innerindex]
         setIsPressed(temp)
@@ -61,7 +75,7 @@ const Workout = ({ route }) => {
     const [bottomSheetOpened,setBottomSheetOpened] = useState(false)
     const [whichTag,setWhichTag] =useState(0)
 
-    const TagColors = ["#B54B4B", "#DB6E15","#CC8042", "#FBBB0D", "#E6BA35", "#97D53F","#6A8B3A","#3A8B46","#3A8B86","#32BAB2","#3790C9","#576BCF","#7A5ACB","#B25ACB","#CB5A97"]
+    const TagColors = ["#B54B4B", "#DB6E15","#CC8042", "#FBBB0D", "#E6BA35", "#97D53F","#20C997","#6A8B3A","#3A8B46","#3A8B86","#32BAB2","#3790C9","#576BCF","#7A5ACB","#B25ACB","#CB5A97","#FF7979"]
 
     const [tagCustomize,setTagCustomize] = useState({
         name:'',
@@ -81,22 +95,24 @@ const Workout = ({ route }) => {
     const [DATA,setDATA] = useState([
         {
             title:'',
-            tag:[{name:'',color:'',id:''}],
-            data:[{rep:'',weight:'',time:''}]
+            tag:[{name:'',color:'',id:0}],
+            data:[{lb:0,rep:'',weight:'',time:null,id:0}]
         }
     ])
-    const [AllTag,setAllTag] = useState([
-        {name:'등',color:'#FBBB0D',id:1},
-        {name:'가슴',color:'#3A8B86',id:2},
-        {name:'어깨',color:'#CB5A97',id:3},
-        {name:'하체',color:'#7A5ACB',id:4}
-    ])
+    const [AllTag,setAllTag] = useState([])
+
+    const getTag = async () => {
+        let tags = await TagDb.query({order:'id ASC'})
+        tags.shift()
+        setAllTag(tags)
+    }
 
     function fetchData(itemId){
-        // local에서 DATA 가져와서 넣기
-        const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('testDB.db'))
+        // db에서 DATA 가져와서 넣기        
+        const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('upgradeDB.db'))
         databaseLayer.executeSql(GET_ALL_BY_WORKOUT_ID+`WHERE workout.id=${itemId}`)
         .then((response) => {
+            console.log('몇번?')
             const responseList = response.rows
             let temp = getDATAfromDB(responseList)
             setDATA(temp)
@@ -104,6 +120,13 @@ const Workout = ({ route }) => {
             // angledown, angleup 판단하는 state - DATA.data 개수만큼 true,false 있어야 함
             let pressedlist = []       
             temp.map((i,idx)=>{
+                if(i.data[0].time!==null){
+                    // 유산소 운동
+                    let temp = isEnabled
+                    temp[idx] = true
+                    setIsEnabled(temp)
+                }
+
                 let aaa = {data:[]}
                 pressedlist.push(aaa)
                 i.data.map((j)=>{
@@ -121,6 +144,7 @@ const Workout = ({ route }) => {
         // 처음 마운트 되었을 때 넘어온 id로 local storage에서 get.
         const {itemId} = route.params;
         console.log(itemId)
+        getTag()
 
         if (itemId === 0){
             // no item id, 새로 작성하는 경우
@@ -137,8 +161,251 @@ const Workout = ({ route }) => {
         }
     }, []);
 
+    useEffect(()=>{
+        if(route.params.saveButton){
+            console.log('savebutton 누름(true)')
+            // DATA에 있는 값 db에 저장
+            saveDATAtoDB()
+        }
+    },[route.params.saveButton])
+
+    async function saveWorkout(itemId,targetdate){
+        if(itemId===0){
+            let res = await WorkoutDb.findBy({date_eq:targetdate})
+            if(res === null){
+                let response = await WorkoutDb.create({date:targetdate})
+                return response.id
+            }else{
+                return res.id
+            }
+        }else return itemId
+    }
+    async function saveSession(title){
+        //존재하지 않는 title일 경우 추가후 해당 id 리턴
+        let response = await SessionDb.findBy({name_eq:title})
+        if(response === null){
+            let res = await SessionDb.create({name:title})
+            return res.id
+        }else{
+            return response.id
+        }
+    }
+    async function saveSets(data){
+        return new Promise((resolve)=>{
+            function getdata(){
+                let result = []
+                data.map(async(i,j)=>{
+                    if(i.time!==null){
+                        // 유산소 운동의 경우
+                        let response = await SetsDb.findBy({time_eq:i.time})
+                        if(response === null){
+                            response = await SetsDb.create({weight:i.weight,rep:i.rep, time:i.time, lb:i.lb})
+                        }
+                        result = [...result,response.id]
+                    }else{
+                        // 무산소 운동의 경우
+                        let response = await SetsDb.findBy({weight_eq:i.weight, rep_eq:i.rep, lb_eq:i.lb})
+                        if(response === null){
+                            // 없다면 추가
+                            response = await SetsDb.create({weight:i.weight,rep:i.rep, time:i.time, lb:i.lb})
+                        }
+                        result = [...result,response.id]
+                    }
+                    if(j===data.length-1){
+                        resolve(result)
+                    }
+                })
+            }
+            getdata()
+        })
+
+        console.log('saveSets 들어옴')
+        let result = []
+        data.map(async(i,j)=>{
+            if(i.time!==null){
+                // 유산소 운동의 경우
+                let response = await SetsDb.findBy({time_eq:i.time})
+                if(response === null){
+                    // 없다면 추가
+                    response = await SetsDb.create({weight:i.weight,rep:i.rep, time:i.time, lb:i.lb})
+                }
+                console.log(response.id)
+                result = [...result,response.id]
+                console.log(result)
+            }else{
+                // 무산소 운동의 경우
+                let response = await SetsDb.findBy({weight_eq:i.weight, rep_eq:i.rep, lb_eq:i.lb})
+                if(response === null){
+                    // 없다면 추가
+                    response = await SetsDb.create({weight:i.weight,rep:i.rep, time:i.time, lb:i.lb})
+                }
+                console.log(response.id)
+                result = [...result,response.id]
+                console.log(result)
+            }
+            if(j===data.length-1){
+                console.log('result : ')
+                console.log(result)
+                return result
+            }
+            // 같은 값이 중복으로 들어가는 경우 방지
+            // if(j>=1){
+            //     if(i === data[j]){
+            //         result = [...result,result[j-1]]
+            //     }else{
+            //         if(i.time!==null){
+            //             // 유산소 운동의 경우
+            //             let response = await SetsDb.findBy({time_eq:i.time})
+            //             if(response === null){
+            //                 // 없다면 추가
+            //                 response = await SetsDb.create({weight:i.weight,rep:i.rep, time:i.time, lb:i.lb})
+            //             }
+            //             console.log(response.id)
+            //             result = [...result,response.id]
+            //             console.log(result)
+            //         }else{
+            //             // 무산소 운동의 경우
+            //             let response = await SetsDb.findBy({weight_eq:i.weight, rep_eq:i.rep, lb_eq:i.lb})
+            //             if(response === null){
+            //                 // 없다면 추가
+            //                 response = await SetsDb.create({weight:i.weight,rep:i.rep, time:i.time, lb:i.lb})
+            //             }
+            //             console.log(response.id)
+            //             result = [...result,response.id]
+            //             console.log(result)
+            //         }
+            //     }
+            // }else{
+            //     if(i.time!==null){
+            //         // 유산소 운동의 경우
+            //         let response = await SetsDb.findBy({time_eq:i.time})
+            //         if(response === null){
+            //             // 없다면 추가
+            //             response = await SetsDb.create({weight:i.weight,rep:i.rep, time:i.time, lb:i.lb})
+            //         }
+            //         console.log(response.id)
+            //         result = [...result,response.id]
+            //         console.log(result)
+            //     }else{
+            //         // 무산소 운동의 경우
+            //         let response = await SetsDb.findBy({weight_eq:i.weight, rep_eq:i.rep, lb_eq:i.lb})
+            //         if(response === null){
+            //             // 없다면 추가
+            //             response = await SetsDb.create({weight:i.weight,rep:i.rep, time:i.time, lb:i.lb})
+            //         }
+            //         console.log(response.id)
+            //         result = [...result,response.id]
+            //         console.log(result)
+            //     }
+            // }
+            // if(j===data.length-1){
+            //     console.log('res:')
+            //     console.log(result)
+            // }
+        })
+    }
+    async function saveWorkoutSessionTag(title,tag,exist,date){
+        const title_id = await saveSession(title)
+        // ok
+        let tagId = [0]
+        if(tag.length !== 0){
+            tagId = []
+            tag.map((i)=>{
+                tagId = [...tagId,i.id]
+            })
+        }
+        tagId.map(async(i)=>{
+            if(exist.length === 0){
+                console.log('관계형 데이터베이스 테이블에 넣기')
+                // 해당 날짜에 운동기록 없으니까 쏙쏙 넣어줘야함
+                const props = {
+                   workout_id: date,
+                   session_id: title_id,
+                   tag_id:i
+                }
+                await Workout_Session_Tag.create(props)
+            }else{
+                // 운동 기록을 수정하는 경우
+                // 비교해서 사라진거 -> 삭제, 새로 생긴거 추가
+                console.log('해당 날짜에 workout 존재')
+            }
+        })
+        return title_id
+    }
+    async function checkWorkoutSessionTag(date){
+        // 해당 날짜에 workout_session_tag rows가 있으면 리턴, 없으면 []리턴
+        const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('upgradeDB.db'))
+        let response = await databaseLayer.executeSql(GET_WORKOUT_SESSION_TAG_BY_DATESTRING+`WHERE workout.date='${date}'`)
+        let rows = await response.rows
+        return rows
+    }
+    async function checkSessionSets(id){
+        const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('upgradeDB.db'))
+        let response = await databaseLayer.executeSql(GET_SESSION_SET_BY_WORKOUTID+`WHERE workout_id=${id}`)
+        let rows = await response.rows
+        return rows
+    }
+    async function saveSessionSet(data, title_id, workoutid, itemId){
+        // const title_id = await saveSession(title)
+        // console.log('title_id : ' + title_id)
+        console.log(workoutid,itemId)
+        // itemId가 0일 경우 비교필요 없음, 0이 아닐 경우 비교해야함
+
+        if(itemId!==0){
+            //비교시작해라
+            //checkSessionSets
+        }else{
+            //비교할 필요 없이 새로 넣는거라서 그냥 무지성때려박기
+            console.log('관계형데이터베이스 테이블 session set에 추가')
+            //set 개수만큼 map -> 한 줄씩 넣기.
+            saveSets(data).then((set_id)=>{
+                set_id.map(async(i)=>{
+                    const props = {
+                        session_id: title_id,
+                        set_id: i,
+                        workout_id: workoutid
+                    }
+                    await Session_Set.create(props)
+                })      
+            })
+        }
+    }
+
+    async function saveDATAtoDB(){
+        const target = [...DATA];
+        const {itemId} = route.params;
+        const {date} = route.params
+
+        const exist = await checkWorkoutSessionTag(date)
+
+        // session 개수만큼 map
+        target.map(async(item,index)=>{
+            let workoutid = await saveWorkout(itemId,date)      
+            //ok
+
+            const title_id = await saveWorkoutSessionTag(item.title,item.tag,exist,workoutid)
+            saveSessionSet(item.data,title_id,workoutid,itemId)
+        })
+    }
+
+    function deleteTag(){
+        TagDb.destroy(tagUpdate.id)
+        const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('upgradeDB.db'))
+        databaseLayer.executeSql(`DELETE FROM workout_session_tag WHERE tag_id=${tagUpdate.id}`)
+        
+        const temp = AllTag.filter((i,j)=>j!==tagUpdate.index);
+        setAllTag(temp)
+        setTagUpdate({
+            name: '',
+            color: '',
+            id:0,
+            index: null
+        })
+        handleTagDelete(whichTag,tagUpdate.index)
+    }
+
     function handleTagAdd(index){
-        console.log(AllTag)
+        //console.log(AllTag)
         // 체크해서 이미 있으면 아무것도 안함.
         let color = AllTag[index].color
         let name = AllTag[index].name
@@ -198,6 +465,7 @@ const Workout = ({ route }) => {
             temp[tagUpdate.index] = {...temp[tagUpdate.index], name:tagUpdate.name,color:tagUpdate.color,id:tagUpdate.id}
             setAllTag(temp)
             // db에 있는 태그 테이블에 변경된 점 반영.
+            TagDb.update({id:tagUpdate.id,name:tagUpdate.name,color:tagUpdate.color})
             // 이미 등록된 태그도 같이 변경해 주어야 함.
             let addedTag = [...DATA];
 
@@ -218,6 +486,7 @@ const Workout = ({ route }) => {
     function handleTagCustomizeAdd(event,color){
         const id = AllTag.length+1
         setTagCustomize({name:event,color:color,id:id})
+
     }
 
     function delSets(index,innerindex){
@@ -241,7 +510,9 @@ const Workout = ({ route }) => {
         let push = {
             rep:DATA[index].data[count-1].rep,
             weight:DATA[index].data[count-1].weight,
-            time:DATA[index].data[count-1].time
+            time:DATA[index].data[count-1].time,
+            lb:DATA[index].data[count-1].lb,
+            id:DATA[index].data[count-1].id + 1
         }
         let temp = [...DATA];
         temp[index].data[count] = push
@@ -276,7 +547,6 @@ const Workout = ({ route }) => {
     }
 
     function handleRightButtonPressed(index,innerindex,number,flag){
-        console.log(index,innerindex,number,flag)
         if(flag === 1){
             let temp = [...DATA]
             temp[index].data[innerindex] = {...temp[index].data[innerindex], rep: Number(temp[index].data[innerindex].rep) + number};
@@ -294,6 +564,7 @@ const Workout = ({ route }) => {
             setAllTag(prevArr => [...prevArr,{name:tagCustomize.name,color:tagCustomize.color,id:tagCustomize.id}])
             setTagCustomize({name:'',color:'#B54B4B'})
             // db에 수정된 데이터 upload
+            TagDb.create({name:tagCustomize.name,color:tagCustomize.color})
         }
     }
     function handleTagCustomizeUpdate(event,color){
@@ -303,13 +574,6 @@ const Workout = ({ route }) => {
         if(DATA[index].title !== ''){
             return true
         }else{
-            // data가 없을 경우는 setisPressed안에 초기값 넣고
-            // data가 있을 때는 아무것도 안함
-            // if(route.params.itemId === 0){
-            //     if(!isPressed){
-            //         setIsPressed([{data:[false]}])
-            //     }
-            // }
             return false
         }
     }
@@ -329,11 +593,11 @@ const Workout = ({ route }) => {
             const temp = {
                 title:'',
                 tag:[],
-                data:[{rep:'',weight:'',time:''}]
+                data:[{rep:'',weight:'',time:null,lb:0,id:0}]
             }
             let res = [...DATA];
             res[index + 1] = temp
-            console.log(res)
+            //console.log(res)
 
             setDATA(res)
             
@@ -402,7 +666,7 @@ const Workout = ({ route }) => {
                 <View style={{marginTop:10}}>
                     <View style={{flexDirection:'row',alignItems:'center', justifyContent:'center'}}>
                         <TextInput
-                            style={{ height:23, fontFamily:'RobotoBold',fontSize:SIZES.body4,color:COLORS.lightWhite,backgroundColor:tagCustomize.color,paddingRight:5,paddingLeft:5, borderRadius:SIZES.radius}}
+                            style={{ height:23, fontFamily:'RobotoBold',fontSize:SIZES.body5,color:COLORS.lightWhite,backgroundColor:tagCustomize.color,paddingRight:5,paddingLeft:5, borderRadius:SIZES.radius}}
                             onChangeText={(event)=>handleTagCustomizeAdd(event,tagCustomize.color)}
                             value={tagCustomize.name}
                             // onEndEditing={()=>onEndEditing()}
@@ -422,12 +686,12 @@ const Workout = ({ route }) => {
                                 <FontAwesome
                                 name="check"
                                 color={'#404040'}
-                                style={{transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }],marginRight:20}}
+                                style={{transform: [{ scaleX: 1.2 }, { scaleY: 1.2 }],marginRight:20}}
                                 />:
                                 <FontAwesome
                                 name="check"
                                 color={COLORS.gray}
-                                style={{transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }],marginRight:20}}
+                                style={{transform: [{ scaleX: 1.2 }, { scaleY: 1.2 }],marginRight:20}}
                                 />
                             }
                         </TouchableOpacity>
@@ -462,17 +726,44 @@ const Workout = ({ route }) => {
                 </View>
                 {
                     tagUpdate.index !== null ?
-                    <View style={{marginTop:30}}>
-                        <View style={{flexDirection:'row',alignItems:'center', justifyContent:'space-around'}}>
-                            <TextInput
-                                style={{ height:23, fontFamily:'RobotoBold',fontSize:SIZES.body4,color:COLORS.lightWhite,backgroundColor:tagUpdate.color,paddingRight:5,paddingLeft:5, borderRadius:SIZES.radius}}
-                                onChangeText={(event)=>handleTagCustomizeUpdate(event,tagUpdate.color)}
-                                value={tagUpdate.name}
-                                // onEndEditing={()=>onEndEditing()}
-                                autoCompleteType='off'
-                                autoCorrect={false}
-                            />
+                    <View style={{marginTop:10}}>
+                        <View style={{flexDirection:'row',alignItems:'center', justifyContent:'center'}}>
+                            <TouchableOpacity onPress={()=>{
+                                Alert.alert(
+                                    "정말 삭제하시겠습니까?",
+                                    `${tagUpdate.name} 태그를 삭제합니다`,
+                                    [
+                                    {
+                                        text: "Cancel",
+                                        onPress: () => console.log("Cancel Pressed"),
+                                        style: "cancel"
+                                    },
+                                    { text: "OK", onPress: () => deleteTag()}
+                                    ],
+                                    { cancelable: false }
+                                );
+                            }}>
+                                <FontAwesome
+                                    name="trash"
+                                    style={{transform: [{ scaleX: 1.2 }, { scaleY: 1.2 }],marginRight:10}}
+                                />
+                            </TouchableOpacity>
+                            <View style={{height:20,backgroundColor:tagUpdate.color, borderRadius:SIZES.radius,justifyContent:'center'}}>
+                                <View style={{paddingHorizontal:8}}>
+                                    <TextInput
+                                        style={{color:COLORS.lightWhite,fontFamily:'RobotoBold',fontSize:SIZES.body5}}
+                                        onChangeText={(event)=>handleTagCustomizeUpdate(event,tagUpdate.color)}
+                                        value={tagUpdate.name}
+                                        // onEndEditing={()=>onEndEditing()}
+                                        autoCompleteType='off'
+                                        placeholder='태그명을 입력하세요'
+                                        autoCorrect={false}
+                                        placeholderTextColor='#ffffff'
+                                    />
+                                </View>
+                            </View>
                             <TouchableOpacity
+                                style={{marginLeft:10}}
                                 onPress={()=>{
                                     updateTagCustom()
                                 }}
@@ -481,13 +772,13 @@ const Workout = ({ route }) => {
                                     tagUpdate.name !== ''?
                                     <FontAwesome
                                     name="check"
-                                    color={COLORS.primary}
-                                    style={{transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }],marginRight:20}}
+                                    color={'#404040'}
+                                    style={{transform: [{ scaleX: 1.2 }, { scaleY: 1.2 }]}}
                                     />:
                                     <FontAwesome
                                     name="check"
                                     color={COLORS.gray}
-                                    style={{transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }],marginRight:20}}
+                                    style={{transform: [{ scaleX: 1.2 }, { scaleY: 1.2 }]}}
                                     />
                                 }
                             </TouchableOpacity>
@@ -642,24 +933,24 @@ const Workout = ({ route }) => {
                         <TouchableOpacity style={styles.leftbuttonContainer} onPress={()=>{
                             handleLeftButtonPressed(index,innerindex,1,1)
                         }}>
-                            <Text style={[styles.text,{color:COLORS.primary}]}>- 1</Text>
+                            <Text style={[styles.text,{color:'#404040'}]}>- 1</Text>
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.rightbuttonContainer} onPress={()=>{
                             handleRightButtonPressed(index,innerindex,1,1)
                         }}>
-                            <Text style={[styles.text,{color:'white'}]}>+1</Text>
+                            <Text style={[styles.text,{color:'#404040'}]}>+1</Text>
                         </TouchableOpacity>
                     </View>
                     <View style={{flexDirection:'row'}}>
                         <TouchableOpacity style={styles.leftbuttonContainer} onPress={()=>{
                             handleLeftButtonPressed(index,innerindex,5,1)
                         }}>
-                            <Text style={[styles.text,{color:COLORS.primary}]}>- 5</Text>
+                            <Text style={[styles.text,{color:'#404040'}]}>- 5</Text>
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.rightbuttonContainer} onPress={()=>{
                             handleRightButtonPressed(index,innerindex,5,1)
                         }}>
-                            <Text style={[styles.text,{color:'white'}]}>+5</Text>
+                            <Text style={[styles.text,{color:'#404040'}]}>+5</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -668,7 +959,7 @@ const Workout = ({ route }) => {
     }
 
     function rendersets(item,innerindex,index){
-        console.log(isPressed)
+        //console.log(isPressed)
         return(
             <View key={innerindex}>
             <View style={styles.rowcontainer}>
@@ -691,7 +982,7 @@ const Workout = ({ route }) => {
                     <View style={{alignItems:'center'}}>
                     <TextInput
                         keyboardType='numeric'
-                        style={{ fontSize:SIZES.body4,fontFamily:'RobotoBold'}}
+                        style={{ fontSize:SIZES.body4,fontFamily:'RobotoRegular'}}
                         onChangeText={(event)=>handleWeight(event,innerindex,index)}
                         value={DATA[index].data[innerindex].weight.toString()}
                         autoCompleteType='off'
@@ -710,7 +1001,7 @@ const Workout = ({ route }) => {
                     <View style={{alignItems:'center'}}>
                         <TextInput
                             keyboardType='numeric'
-                            style={{ fontSize:SIZES.body4,fontFamily:'RobotoBold'}}
+                            style={{ fontSize:SIZES.body4,fontFamily:'RobotoRegular'}}
                             onChangeText={(event)=>handleReps(event,innerindex,index)}
                             value={DATA[index].data[innerindex].rep.toString()}
                             autoCompleteType='off'
@@ -759,7 +1050,7 @@ const Workout = ({ route }) => {
                         <View style={{alignItems:'center'}}>
                             <TextInput
                             keyboardType='numeric'
-                            style={{ fontSize:SIZES.body4,fontFamily:'RobotoBold'}}
+                            style={{ fontSize:SIZES.body4,fontFamily:'RobotoRegular'}}
                             onChangeText={(event)=>handleTime(event,index)}
                             value={DATA[index].data[0].time.toString()}
                             autoCompleteType='off'
@@ -814,7 +1105,7 @@ const Workout = ({ route }) => {
             <>
                 <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}>
                     <TextInput
-                        style={{ fontSize:SIZES.h4,fontFamily:'RobotoBold'}}
+                        style={{ fontSize:SIZES.h4,fontFamily:'RobotoRegular'}}
                         onChangeText={(event)=>handelTitle(event,index)}
                         value={DATA[index].title}
                         placeholder='제목'
@@ -846,10 +1137,8 @@ const Workout = ({ route }) => {
                 </View>       
                 <Line2/>
                 <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between', marginTop:SIZES.padding}}>
-                    <ScrollView horizontal={true}>
-                    {
-                        renderTagPlus(index)
-                    }
+                    <ScrollView horizontal={true} contentContainerStyle={{alignItems:'center'}}>
+                    {renderTagPlus(index)}
                     {
                         DATA[index].tag.map((item,j)=>(                        
                             <TouchableOpacity key={j} onPress={()=>{
@@ -877,11 +1166,7 @@ const Workout = ({ route }) => {
                             color={COLORS.primary}
                             style={{transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }],marginRight:10}}
                         />
-                        {
-                            !isEnabled[index]?
-                            <Text style={{fontFamily:'RobotoRegular',fontSize:SIZES.body3}}>유산소</Text>:
-                            <Text style={{fontFamily:'RobotoRegular',fontSize:SIZES.body3}}>유산소</Text>
-                        }
+                        <Text style={{fontFamily:'RobotoRegular',fontSize:SIZES.body3}}>유산소</Text>
                     </View>
                     <Switch
                         trackColor={{true:COLORS.primary}}
@@ -890,6 +1175,7 @@ const Workout = ({ route }) => {
                         style={{transform: [{ scaleX: .7 }, { scaleY: .7 }]}}
                     />
                 </View>
+                {!isEnabled[index]?
                 <View style={styles.rowcontainer}>
                     <View style={{flexDirection:'row', alignItems:'center'}}>
                         <FontAwesome
@@ -905,7 +1191,7 @@ const Workout = ({ route }) => {
                         value={measure[index]}
                         style={{transform: [{ scaleX: .7 }, { scaleY: .7 }]}}
                     />
-                </View>
+                </View>:<></>}
                 {   
                     !isEnabled[index]?
                     DATA[index].data.map((item,innerindex)=>rendersets(item,innerindex,index)):
@@ -939,6 +1225,56 @@ const Workout = ({ route }) => {
     //         </View>
     //     )
     // }
+
+    function showWorkout (){
+        const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('upgradeDB.db'))
+        databaseLayer.executeSql(`SELECT * FROM workout`)
+        .then((response) => {
+            console.log(response.rows)
+        })
+    }
+    function showSession (){
+        const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('upgradeDB.db'))
+        databaseLayer.executeSql(`SELECT * FROM session`)
+        .then((response) => {
+            console.log(response.rows)
+        })
+    }
+    function showSets (){
+        const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('upgradeDB.db'))
+        databaseLayer.executeSql(`SELECT * FROM sets`)
+        .then((response) => {
+            console.log(response.rows)
+        })
+    }
+    function showTag (){
+        const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('upgradeDB.db'))
+        databaseLayer.executeSql(`SELECT * FROM tag`)
+        .then((response) => {
+            console.log(response.rows)
+        })
+    }
+    function showWST (){
+        const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('upgradeDB.db'))
+        databaseLayer.executeSql(`SELECT * FROM workout_session_tag`)
+        .then((response) => {
+            console.log(response.rows)
+        })
+    }
+    function showSS (){
+        const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('upgradeDB.db'))
+        databaseLayer.executeSql(`SELECT * FROM session_set`)
+        .then((response) => {
+            console.log(response.rows)
+        })
+    }
+    function showAll (){
+        const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('upgradeDB.db'))
+        databaseLayer.executeSql(GET_ALL_BY_WORKOUT_ID+`WHERE workout.id=2`)
+        .then((response) => {
+            console.log(response.rows)
+        })
+    }
 
     function renderForm(data,index){
         return(
@@ -979,13 +1315,55 @@ const Workout = ({ route }) => {
                             DATA.map((data,index)=>renderForm(data,index))
                         }
                     </View>
+                    <Button
+                        onPress={showWorkout}
+                        title="show workout"
+                        color="#841584"
+                        accessibilityLabel="Learn more about this purple button"
+                    />
+                    <Button
+                        onPress={showSession}
+                        title="show Session"
+                        color="#841584"
+                        accessibilityLabel="Learn more about this purple button"
+                    />
+                    <Button
+                        onPress={showSets}
+                        title="show sets"
+                        color="#841584"
+                        accessibilityLabel="Learn more about this purple button"
+                    />
+                    <Button
+                        onPress={showTag}
+                        title="show tag"
+                        color="#841584"
+                        accessibilityLabel="Learn more about this purple button"
+                    />
+                    <Button
+                        onPress={showWST}
+                        title="show workout session tag"
+                        color="#841584"
+                        accessibilityLabel="Learn more about this purple button"
+                    />
+                    <Button
+                        onPress={showSS}
+                        title="show session set"
+                        color="#841584"
+                        accessibilityLabel="Learn more about this purple button"
+                    />
+                    <Button
+                        onPress={showAll}
+                        title="show All"
+                        color="#841584"
+                        accessibilityLabel="Learn more about this purple button"
+                    />
                     <View style={{height:600}}></View>
                 </ScrollView>
             </SafeAreaView>
             }
             <BottomSheet
                 ref={TagSheet}
-                snapPoints={[680, 0, 0]}
+                snapPoints={[750, 0, 0]}
                 borderRadius={20}
                 renderContent={()=>renderbottomsheet()}
                 initialSnap={1}
@@ -1027,30 +1405,32 @@ const styles = StyleSheet.create({
         paddingRight: SIZES.base,
     },
     text:{
-        fontFamily:'RobotoThin',
+        fontFamily:'RobotoLight',
         fontSize:SIZES.body3
     },
     tagContainer:{
         backgroundColor: 'white',
         padding: SIZES.padding*2,
-        height: 680,
+        height: 750,
     },
     tagTitleContainer:{
         marginTop:12,
-        marginBottom:12
+        marginBottom:12,
+        marginLeft:6
     },
     leftbuttonContainer:{
         backgroundColor:'#E9E9EB',
         borderRadius:SIZES.radius*3,
         margin:3,
-        paddingHorizontal:10,
+        paddingHorizontal:15,
+        paddingVertical:8,
         justifyContent:'center'
     },
     rightbuttonContainer:{
         backgroundColor:'#E9E9EB',
         borderRadius:SIZES.radius*3,
         margin:3,
-        paddingHorizontal:10,
+        paddingHorizontal:15,
         justifyContent:'center'
     },
     alltag:{

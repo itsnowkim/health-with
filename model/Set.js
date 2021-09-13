@@ -7,7 +7,7 @@ export default class Set extends BaseModel {
   }
 
   static get database() {
-    return async () => SQLite.openDatabase('testDB.db')
+    return async () => SQLite.openDatabase('upgradeDB.db')
   }
 
   static get tableName() {
@@ -20,6 +20,7 @@ export default class Set extends BaseModel {
       weight: { type: types.FLOAT },
       rep: { type: types.INTEGER },
       time: { type: types.INTEGER },
+      lb: { type: types.INTEGER },
     }
   }
 }
