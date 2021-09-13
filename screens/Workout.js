@@ -102,7 +102,8 @@ const Workout = ({ route }) => {
     const [AllTag,setAllTag] = useState([])
 
     const getTag = async () => {
-        const tags = await TagDb.query({order:'id ASC'})
+        let tags = await TagDb.query({order:'id ASC'})
+        tags.shift()
         setAllTag(tags)
     }
 
@@ -198,12 +199,9 @@ const Workout = ({ route }) => {
                         // 유산소 운동의 경우
                         let response = await SetsDb.findBy({time_eq:i.time})
                         if(response === null){
-                            // 없다면 추가
                             response = await SetsDb.create({weight:i.weight,rep:i.rep, time:i.time, lb:i.lb})
                         }
-                        console.log(response.id)
                         result = [...result,response.id]
-                        console.log(result)
                     }else{
                         // 무산소 운동의 경우
                         let response = await SetsDb.findBy({weight_eq:i.weight, rep_eq:i.rep, lb_eq:i.lb})
@@ -211,13 +209,9 @@ const Workout = ({ route }) => {
                             // 없다면 추가
                             response = await SetsDb.create({weight:i.weight,rep:i.rep, time:i.time, lb:i.lb})
                         }
-                        console.log(response.id)
                         result = [...result,response.id]
-                        console.log(result)
                     }
                     if(j===data.length-1){
-                        console.log('result : ')
-                        console.log(result)
                         resolve(result)
                     }
                 })
@@ -354,7 +348,7 @@ const Workout = ({ route }) => {
     async function saveSessionSet(data, title_id, workoutid, itemId){
         // const title_id = await saveSession(title)
         // console.log('title_id : ' + title_id)
-        // console.log(workoutid,itemId)
+        console.log(workoutid,itemId)
         // itemId가 0일 경우 비교필요 없음, 0이 아닐 경우 비교해야함
 
         if(itemId!==0){
@@ -365,12 +359,10 @@ const Workout = ({ route }) => {
             console.log('관계형데이터베이스 테이블 session set에 추가')
             //set 개수만큼 map -> 한 줄씩 넣기.
             saveSets(data).then((set_id)=>{
-                data.map(async(i)=>{
-                    console.log('set_id : ')
-                    console.log(set_id)
+                set_id.map(async(i)=>{
                     const props = {
                         session_id: title_id,
-                        set_id: set_id,
+                        set_id: i,
                         workout_id: workoutid
                     }
                     await Session_Set.create(props)
