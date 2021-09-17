@@ -5,6 +5,7 @@ export const getDATAfromDB = (responseList) => {
     responseList.map((data,idx) => {
         let resultobj = {
         title:data.name,
+        id:data.workout_session_tag_id,
         tag:[{id:data.tag_id, name:data.tag_name, color: data.color}],
         data:[{rep:data.rep, weight:data.weight, time:data.time, lb:data.lb, id:data.session_set_id}]
         }

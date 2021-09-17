@@ -95,6 +95,7 @@ const Workout = ({ route }) => {
     const [DATA,setDATA] = useState([
         {
             title:'',
+            id:0,
             tag:[{name:'',color:'',id:1}],
             data:[{lb:0,rep:'',weight:'',time:null,id:0}]
         }
@@ -116,7 +117,6 @@ const Workout = ({ route }) => {
             const responseList = response.rows
             let temp = getDATAfromDB(responseList)
             setDATA(temp)
-            
             // angledown, angleup 판단하는 state - DATA.data 개수만큼 true,false 있어야 함
             let pressedlist = []       
             temp.map((i,idx)=>{
@@ -191,6 +191,7 @@ const Workout = ({ route }) => {
         }
     }
     async function saveSets(data){
+        // 새치기 막아야됨
         return new Promise((resolve)=>{
             function getdata(){
                 let result = []
@@ -216,91 +217,6 @@ const Workout = ({ route }) => {
                 })
             }
             getdata()
-        })
-
-        console.log('saveSets 들어옴')
-        let result = []
-        data.map(async(i,j)=>{
-            if(i.time!==null){
-                // 유산소 운동의 경우
-                let response = await SetsDb.findBy({time_eq:i.time})
-                if(response === null){
-                    // 없다면 추가
-                    response = await SetsDb.create({weight:i.weight,rep:i.rep, time:i.time, lb:i.lb})
-                }
-                console.log(response.id)
-                result = [...result,response.id]
-                console.log(result)
-            }else{
-                // 무산소 운동의 경우
-                let response = await SetsDb.findBy({weight_eq:i.weight, rep_eq:i.rep, lb_eq:i.lb})
-                if(response === null){
-                    // 없다면 추가
-                    response = await SetsDb.create({weight:i.weight,rep:i.rep, time:i.time, lb:i.lb})
-                }
-                console.log(response.id)
-                result = [...result,response.id]
-                console.log(result)
-            }
-            if(j===data.length-1){
-                console.log('result : ')
-                console.log(result)
-                return result
-            }
-            // 같은 값이 중복으로 들어가는 경우 방지
-            // if(j>=1){
-            //     if(i === data[j]){
-            //         result = [...result,result[j-1]]
-            //     }else{
-            //         if(i.time!==null){
-            //             // 유산소 운동의 경우
-            //             let response = await SetsDb.findBy({time_eq:i.time})
-            //             if(response === null){
-            //                 // 없다면 추가
-            //                 response = await SetsDb.create({weight:i.weight,rep:i.rep, time:i.time, lb:i.lb})
-            //             }
-            //             console.log(response.id)
-            //             result = [...result,response.id]
-            //             console.log(result)
-            //         }else{
-            //             // 무산소 운동의 경우
-            //             let response = await SetsDb.findBy({weight_eq:i.weight, rep_eq:i.rep, lb_eq:i.lb})
-            //             if(response === null){
-            //                 // 없다면 추가
-            //                 response = await SetsDb.create({weight:i.weight,rep:i.rep, time:i.time, lb:i.lb})
-            //             }
-            //             console.log(response.id)
-            //             result = [...result,response.id]
-            //             console.log(result)
-            //         }
-            //     }
-            // }else{
-            //     if(i.time!==null){
-            //         // 유산소 운동의 경우
-            //         let response = await SetsDb.findBy({time_eq:i.time})
-            //         if(response === null){
-            //             // 없다면 추가
-            //             response = await SetsDb.create({weight:i.weight,rep:i.rep, time:i.time, lb:i.lb})
-            //         }
-            //         console.log(response.id)
-            //         result = [...result,response.id]
-            //         console.log(result)
-            //     }else{
-            //         // 무산소 운동의 경우
-            //         let response = await SetsDb.findBy({weight_eq:i.weight, rep_eq:i.rep, lb_eq:i.lb})
-            //         if(response === null){
-            //             // 없다면 추가
-            //             response = await SetsDb.create({weight:i.weight,rep:i.rep, time:i.time, lb:i.lb})
-            //         }
-            //         console.log(response.id)
-            //         result = [...result,response.id]
-            //         console.log(result)
-            //     }
-            // }
-            // if(j===data.length-1){
-            //     console.log('res:')
-            //     console.log(result)
-            // }
         })
     }
     async function saveWorkoutSessionTag(title,tag,exist,date){
@@ -346,11 +262,6 @@ const Workout = ({ route }) => {
         return rows
     }
     async function saveSessionSet(data, title_id, workoutid, itemId){
-        // const title_id = await saveSession(title)
-        // console.log('title_id : ' + title_id)
-        console.log(workoutid,itemId)
-        // itemId가 0일 경우 비교필요 없음, 0이 아닐 경우 비교해야함
-
         if(itemId!==0){
             //비교시작해라
             //checkSessionSets
@@ -380,7 +291,6 @@ const Workout = ({ route }) => {
         let workoutid = await saveWorkout(itemId,date)
 
         // session 개수만큼 map
-        console.log(target)
         target.map(async(item,index)=>{
             const title_id = await saveWorkoutSessionTag(item.title,item.tag,exist,workoutid)
             saveSessionSet(item.data,title_id,workoutid,itemId)
@@ -510,7 +420,7 @@ const Workout = ({ route }) => {
             weight:DATA[index].data[count-1].weight,
             time:DATA[index].data[count-1].time,
             lb:DATA[index].data[count-1].lb,
-            id:DATA[index].data[count-1].id + 1
+            id:DATA[index].data[count-1].id
         }
         let temp = [...DATA];
         temp[index].data[count] = push
@@ -591,6 +501,7 @@ const Workout = ({ route }) => {
         if(DATA[index].title !== ''){
             const temp = {
                 title:'',
+                id:0,
                 tag:[{name:'',color:'',id:1}],
                 data:[{rep:'',weight:'',time:null,lb:0,id:0}]
             }
@@ -626,7 +537,7 @@ const Workout = ({ route }) => {
     function deleteWorkout(index){
         console.log('삭제버튼 누름')
         if(DATA.length === 1){
-            setDATA([{title:'',tag:[{name:'',color:'',id:1}],data:[{rep:'',weight:'',time:''}]}])
+            setDATA([{title:'',id:0,tag:[{name:'',color:'',id:1}],data:[{rep:'',weight:'',time:''}]}])
             //angle state 처리
             setIsPressed([{data:[false]}])
             setMeasure([false])
@@ -1274,6 +1185,12 @@ const Workout = ({ route }) => {
             console.log(response.rows)
         })
     }
+    function showAllDATA (){
+        const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('upgradeDB.db'))
+        DATA.map((i)=>{
+            console.log(i)
+        })
+    }
 
     function renderForm(data,index){
         return(
@@ -1353,6 +1270,12 @@ const Workout = ({ route }) => {
                     <Button
                         onPress={showAll}
                         title="show All"
+                        color="#841584"
+                        accessibilityLabel="Learn more about this purple button"
+                    />
+                    <Button
+                        onPress={showAllDATA}
+                        title="show All DATA"
                         color="#841584"
                         accessibilityLabel="Learn more about this purple button"
                     />
