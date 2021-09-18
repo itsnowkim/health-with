@@ -90,8 +90,9 @@ const Workout = ({ route }) => {
     })
     const [firstAngle,setFirstAngle] = useState(false)
     const [secondAngle,setSecondAngle] = useState(false)
+    const [itemId,setItemId] = useState()
 
-    // 임시
+    // 화면에서 보고 있는 데이터
     const [DATA,setDATA] = useState([
         {
             title:'',
@@ -100,6 +101,19 @@ const Workout = ({ route }) => {
             data:[{lb:0,rep:'',weight:'',time:null,id:0}]
         }
     ])
+    // db에 있는 데이터
+    const [prevDATA,setprevDATA] = useState([
+        {
+            title:'',
+            id:0,
+            tag:[{name:'',color:'',id:1}],
+            data:[{lb:0,rep:'',weight:'',time:null,id:0}]
+        }
+    ])
+    // db에 추가될 데이터
+    const [addDATA,setaddDATA] = useState([])
+    // db에서 삭제될 데이터
+    const [delDATA,setdelDATA] = useState([])
     const [AllTag,setAllTag] = useState([])
 
     const getTag = async () => {
@@ -117,6 +131,7 @@ const Workout = ({ route }) => {
             const responseList = response.rows
             let temp = getDATAfromDB(responseList)
             setDATA(temp)
+            setprevDATA(temp)
             // angledown, angleup 판단하는 state - DATA.data 개수만큼 true,false 있어야 함
             let pressedlist = []       
             temp.map((i,idx)=>{
@@ -143,7 +158,7 @@ const Workout = ({ route }) => {
     useEffect(()=> {
         // 처음 마운트 되었을 때 넘어온 id로 local storage에서 get.
         const {itemId} = route.params;
-        console.log(itemId)
+        setItemId(itemId)
         getTag()
 
         if (itemId === 0){
@@ -219,33 +234,27 @@ const Workout = ({ route }) => {
             getdata()
         })
     }
-    async function saveWorkoutSessionTag(title,tag,exist,date){
+    async function saveWorkoutSessionTag(title,tag,exist,workoutId){
         const title_id = await saveSession(title)
         // ok
-        let tagId = [0]
+        let tagId = [1]
         if(tag.length !== 0){
             tagId = []
             tag.map((i)=>{
                 tagId = [...tagId,i.id]
             })
         }
+        
         tagId.map(async(i)=>{
-            if(exist.length === 0){
-                console.log('관계형 데이터베이스 테이블에 넣기')
-                // 해당 날짜에 운동기록 없으니까 쏙쏙 넣어줘야함
-                const props = {
-                   workout_id: date,
-                   session_id: title_id,
-                   tag_id:i
-                }
-                await Workout_Session_Tag.create(props)
-            }else{
-                // 운동 기록을 수정하는 경우
-                // 비교해서 사라진거 -> 삭제, 새로 생긴거 추가
-                console.log('해당 날짜에 workout 존재')
-
+            const props = {
+                workout_id: workoutId,
+                session_id: title_id,
+                tag_id:i
             }
+            await Workout_Session_Tag.create(props)
         })
+        
+        
         return title_id
     }
     async function checkWorkoutSessionTag(date){
@@ -287,16 +296,17 @@ const Workout = ({ route }) => {
         const {itemId} = route.params;
         const {date} = route.params
 
-        const exist = await checkWorkoutSessionTag(date)
+        const workout_session_tag_prev = await checkWorkoutSessionTag(date)
         let workoutid = await saveWorkout(itemId,date)
 
         // session 개수만큼 map
         target.map(async(item,index)=>{
-            const title_id = await saveWorkoutSessionTag(item.title,item.tag,exist,workoutid)
+            const title_id = await saveWorkoutSessionTag(item.title,item.tag,workout_session_tag_prev,workoutid)
             saveSessionSet(item.data,title_id,workoutid,itemId)
         })
     }
 
+    // 태그 자체를 지움
     function deleteTag(){
         TagDb.destroy(tagUpdate.id)
         const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('upgradeDB.db'))
@@ -313,13 +323,20 @@ const Workout = ({ route }) => {
         handleTagDelete(whichTag,tagUpdate.index)
     }
 
+    // 새로운 태그를 등록
     function handleTagAdd(index){
-        //console.log(AllTag)
         // 체크해서 이미 있으면 아무것도 안함.
-        let color = AllTag[index].color
-        let name = AllTag[index].name
+        const color = AllTag[index].color
+        const name = AllTag[index].name
+        const tagId = AllTag[index].id
+        const resultobj = {
+            color:color,
+            name:name,
+            id:tagId
+        }
 
         let temp = [...DATA];
+        let addtemp = [...addDATA];
 
         let istrue = false
         temp[whichTag].tag.map((i,j)=>{
@@ -330,23 +347,57 @@ const Workout = ({ route }) => {
 
         // 찾는함수
         if(!istrue){
-            //문제 없음
+            //길이가 0인 경우 그냥 바꿔끼기
             if(temp[whichTag].tag.length === 0){
-                temp[whichTag].tag = [...temp[whichTag].tag,{color:color,name:name,id:AllTag[index].id}]
+                temp[whichTag].tag = [...temp[whichTag].tag,resultobj]
             }else{
+                //이미 태그가 존재하면 그 뒤에 이어붙이기
                 if(temp[whichTag].tag[0].name===''){
-                    temp[whichTag].tag[0] = {...temp[whichTag].tag[index], color:color,name:name,id:AllTag[index].id};
+                    temp[whichTag].tag[0] = {...temp[whichTag].tag[index], color:color,name:name,id:tagId};
                 }else{
-                    temp[whichTag].tag = [...temp[whichTag].tag,{color:color,name:name,id:AllTag[index].id}]
+                    temp[whichTag].tag = [...temp[whichTag].tag,resultobj]
                 }
             }
+            
+            addtemp = [...addtemp,{workout_id:itemId,session_id:temp[whichTag].id,tag_id:tagId}]
+            
             setDATA(temp)
+            setaddDATA(addtemp)
+            console.log(addtemp)
         }
-        //console.log(temp)
+    }
+    function checkAdded(target){
+        // addDATA에 있는 값이면 return 0
+        let addTemp = [...addDATA]
+        const result = addDATA.findIndex(element=>
+            element.session_id === target.session_id && element.tag_id === target.tag_id && element.workout_id === target.workout_id
+        )
+        
+        if(result === -1)return 0
+        else{
+            addTemp.splice(result,1)
+            setaddDATA(addTemp)
+            return 1
+        }   
     }
     function handleTagDelete(index,innerindex){
-        const temp = DATA[index].tag.filter((item,j)=>j!==innerindex);
-        
+        // addDATA에 없다면 delDATA에만 지워진 태그 넣어주고, addDATA에 있다면 그것도 지워줘야 함.
+        let deltemp = [...delDATA]
+        const target = {
+            workout_id:itemId,
+            session_id:DATA[index].id,
+            tag_id:DATA[index].tag[innerindex].id
+        }
+        if(checkAdded(target) !== 1){
+            deltemp = [...deltemp,target]
+            setdelDATA(deltemp)
+        }
+
+        const temp = DATA[index].tag.filter((item,j)=>
+            j!==innerindex
+        );
+
+        // 다 가져와서 tag만 temp로 갈아끼우네
         let result = [...DATA];
         result[index] = {...result[index],tag:temp}
         setDATA(result)
@@ -424,6 +475,7 @@ const Workout = ({ route }) => {
         }
         let temp = [...DATA];
         temp[index].data[count] = push
+        // console.log(temp[index].data[count-1])
         setDATA(temp)
 
         //angle state 처리
