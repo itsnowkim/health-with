@@ -35,7 +35,7 @@ const Workout = ({ route }) => {
         }
         //DATA 비우기
         let del = [...DATA]
-        del[index].data = [{rep:'',time:'',weight:'',lb:0}]
+        del[index].data = [{rep:'',time:'',weight:'',lb:0,session_set_id:0,sets_id:0}]
         setDATA(del)
     }
     const [measure, setMeasure] = useState([false]);
@@ -91,6 +91,7 @@ const Workout = ({ route }) => {
     const [firstAngle,setFirstAngle] = useState(false)
     const [secondAngle,setSecondAngle] = useState(false)
     const [itemId,setItemId] = useState()
+    let organized = []
 
     // 화면에서 보고 있는 데이터
     const [DATA,setDATA] = useState([
@@ -98,7 +99,7 @@ const Workout = ({ route }) => {
             title:'',
             id:0,
             tag:[{name:'',color:'',id:1}],
-            data:[{lb:0,rep:'',weight:'',time:null,id:0}]
+            data:[{lb:0,rep:'',weight:'',time:null,session_set_id:0,sets_id:0}]
         }
     ])
     // db에 있는 데이터
@@ -176,8 +177,34 @@ const Workout = ({ route }) => {
         }
     }, []);
 
+    function organizeDATA(){
+        // 세트 개수만큼 for loop 돌면서 organize.
+        let dataArr = []
+        let temp = organized
+        DATA.map((element)=>{
+            element.data.map((sets)=>{
+                dataArr = [...dataArr,sets]
+            })
+        })
+
+        dataArr.map((element)=>{
+            let index = -1
+            if(element.time !== null){
+                index = dataArr.findIndex(value=>value.time === element.time)
+                temp = [...temp,index]
+            }else{
+                index = dataArr.findIndex(value=>
+                    value.lb === element.lb && value.weight === element.weight && value.rep === element.rep
+                )
+                temp = [...temp,index]
+            }
+        })
+        organized = temp
+    }
+
     useEffect(()=>{
         if(route.params.saveButton){
+            organizeDATA()
             console.log('savebutton 누름(true)')
             // DATA에 있는 값 db에 저장
             saveDATAtoDB()
@@ -210,24 +237,35 @@ const Workout = ({ route }) => {
         return new Promise((resolve)=>{
             function getdata(){
                 let result = []
+                let temp_organized = organized
+                
                 data.map(async(i,j)=>{
-                    if(i.time!==null){
-                        // 유산소 운동의 경우
-                        let response = await SetsDb.findBy({time_eq:i.time})
-                        if(response === null){
-                            response = await SetsDb.create({weight:i.weight,rep:i.rep, time:i.time, lb:i.lb})
-                        }
-                        result = [...result,response.id]
+                    if(temp_organized[j]!==j){
+                        console.log('이전에 나옴')
+                        //이전에 나온거.
+                        result[j] = {key:true,value:temp_organized[j]}
                     }else{
-                        // 무산소 운동의 경우
-                        let response = await SetsDb.findBy({weight_eq:i.weight, rep_eq:i.rep, lb_eq:i.lb})
-                        if(response === null){
-                            response = await SetsDb.create({weight:i.weight,rep:i.rep, time:i.time, lb:i.lb})
+                        //처음 나온거.
+                        console.log('처음 나옴')
+                        if(i.time!==null){
+                            // 유산소 운동의 경우
+                            let response = await SetsDb.findBy({time_eq:i.time})
+                            if(response === null){
+                                response = await SetsDb.create({weight:i.weight,rep:i.rep, time:i.time, lb:i.lb})
+                            }
+                            result = [...result,response.id]
+                            result[j] = {key:false,value:response.id}
+                        }else{
+                            // 무산소 운동의 경우
+                            let response = await SetsDb.findBy({weight_eq:i.weight, rep_eq:i.rep, lb_eq:i.lb})
+                            if(response === null){
+                                response = await SetsDb.create({weight:i.weight,rep:i.rep, time:i.time, lb:i.lb})
+                            }
+                            result[j] = {key:false,value:response.id}
                         }
-                        result = [...result,response.id]
-                    }
-                    if(j===data.length-1){
-                        resolve(result)
+                        if(result.length === data.length){
+                            resolve(result)
+                        }
                     }
                 })
             }
@@ -257,6 +295,8 @@ const Workout = ({ route }) => {
         
         return title_id
     }
+
+
     async function checkWorkoutSessionTag(date){
         // 해당 날짜에 workout_session_tag rows가 있으면 리턴, 없으면 []리턴
         const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('upgradeDB.db'))
@@ -271,18 +311,25 @@ const Workout = ({ route }) => {
         return rows
     }
     async function saveSessionSet(data, title_id, workoutid, itemId){
+        let target
         if(itemId!==0){
             //비교시작해라
             //checkSessionSets
         }else{
             //비교할 필요 없이 새로 넣는거라서 그냥 무지성때려박기
-            console.log('관계형데이터베이스 테이블 session set에 추가')
+            
             //set 개수만큼 map -> 한 줄씩 넣기.
             saveSets(data).then((set_id)=>{
                 set_id.map(async(i)=>{
+                    console.log(i)
+                    if(i.key===false){
+                        target = i.value
+                    }else{
+                        target = set_id[i.value].value
+                    }
                     const props = {
                         session_id: title_id,
-                        set_id: i,
+                        set_id: target,
                         workout_id: workoutid
                     }
                     await Session_Set.create(props)
@@ -471,11 +518,12 @@ const Workout = ({ route }) => {
             weight:DATA[index].data[count-1].weight,
             time:DATA[index].data[count-1].time,
             lb:DATA[index].data[count-1].lb,
-            id:DATA[index].data[count-1].id
+            session_set_id:0,
+            sets_id:0
         }
         let temp = [...DATA];
         temp[index].data[count] = push
-        // console.log(temp[index].data[count-1])
+        
         setDATA(temp)
 
         //angle state 처리
@@ -555,7 +603,7 @@ const Workout = ({ route }) => {
                 title:'',
                 id:0,
                 tag:[{name:'',color:'',id:1}],
-                data:[{rep:'',weight:'',time:null,lb:0,id:0}]
+                data:[{rep:'',weight:'',time:null,lb:0,session_set_id:0,sets_id:0}]
             }
             let res = [...DATA];
             res[index + 1] = temp
