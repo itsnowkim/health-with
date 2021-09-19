@@ -35,7 +35,7 @@ const Workout = ({ route }) => {
         }
         //DATA 비우기
         let del = [...DATA]
-        del[index].data = [{rep:'',time:'',weight:'',lb:0}]
+        del[index].data = [{rep:'',time:'',weight:'',lb:0,session_set_id:0,sets_id:0}]
         setDATA(del)
     }
     const [measure, setMeasure] = useState([false]);
@@ -80,25 +80,41 @@ const Workout = ({ route }) => {
     const [tagCustomize,setTagCustomize] = useState({
         name:'',
         color:'#B54B4B',
-        id:0
+        id:1
     })
     const [tagUpdate,setTagUpdate] = useState({
         name: '',
         color: '',
-        id:0,
+        id:1,
         index: null
     })
     const [firstAngle,setFirstAngle] = useState(false)
     const [secondAngle,setSecondAngle] = useState(false)
+    const [itemId,setItemId] = useState()
+    let organized = []
 
-    // 임시
+    // 화면에서 보고 있는 데이터
     const [DATA,setDATA] = useState([
         {
             title:'',
-            tag:[{name:'',color:'',id:0}],
+            id:0,
+            tag:[{name:'',color:'',id:1}],
+            data:[{lb:0,rep:'',weight:'',time:null,session_set_id:0,sets_id:0}]
+        }
+    ])
+    // db에 있는 데이터
+    const [prevDATA,setprevDATA] = useState([
+        {
+            title:'',
+            id:0,
+            tag:[{name:'',color:'',id:1}],
             data:[{lb:0,rep:'',weight:'',time:null,id:0}]
         }
     ])
+    // db에 추가될 데이터
+    const [addDATA,setaddDATA] = useState([])
+    // db에서 삭제될 데이터
+    const [delDATA,setdelDATA] = useState([])
     const [AllTag,setAllTag] = useState([])
 
     const getTag = async () => {
@@ -116,7 +132,7 @@ const Workout = ({ route }) => {
             const responseList = response.rows
             let temp = getDATAfromDB(responseList)
             setDATA(temp)
-            
+            setprevDATA(temp)
             // angledown, angleup 판단하는 state - DATA.data 개수만큼 true,false 있어야 함
             let pressedlist = []       
             temp.map((i,idx)=>{
@@ -143,7 +159,7 @@ const Workout = ({ route }) => {
     useEffect(()=> {
         // 처음 마운트 되었을 때 넘어온 id로 local storage에서 get.
         const {itemId} = route.params;
-        console.log(itemId)
+        setItemId(itemId)
         getTag()
 
         if (itemId === 0){
@@ -161,8 +177,34 @@ const Workout = ({ route }) => {
         }
     }, []);
 
+    function organizeDATA(){
+        // 세트 개수만큼 for loop 돌면서 organize.
+        let dataArr = []
+        let temp = organized
+        DATA.map((element)=>{
+            element.data.map((sets)=>{
+                dataArr = [...dataArr,sets]
+            })
+        })
+
+        dataArr.map((element)=>{
+            let index = -1
+            if(element.time !== null){
+                index = dataArr.findIndex(value=>value.time === element.time)
+                temp = [...temp,index]
+            }else{
+                index = dataArr.findIndex(value=>
+                    value.lb === element.lb && value.weight === element.weight && value.rep === element.rep
+                )
+                temp = [...temp,index]
+            }
+        })
+        organized = temp
+    }
+
     useEffect(()=>{
         if(route.params.saveButton){
+            organizeDATA()
             console.log('savebutton 누름(true)')
             // DATA에 있는 값 db에 저장
             saveDATAtoDB()
@@ -191,147 +233,70 @@ const Workout = ({ route }) => {
         }
     }
     async function saveSets(data){
+        // 새치기 막아야됨
         return new Promise((resolve)=>{
             function getdata(){
                 let result = []
+                let temp_organized = organized
+                
                 data.map(async(i,j)=>{
-                    if(i.time!==null){
-                        // 유산소 운동의 경우
-                        let response = await SetsDb.findBy({time_eq:i.time})
-                        if(response === null){
-                            response = await SetsDb.create({weight:i.weight,rep:i.rep, time:i.time, lb:i.lb})
-                        }
-                        result = [...result,response.id]
+                    if(temp_organized[j]!==j){
+                        console.log('이전에 나옴')
+                        //이전에 나온거.
+                        result[j] = {key:true,value:temp_organized[j]}
                     }else{
-                        // 무산소 운동의 경우
-                        let response = await SetsDb.findBy({weight_eq:i.weight, rep_eq:i.rep, lb_eq:i.lb})
-                        if(response === null){
-                            // 없다면 추가
-                            response = await SetsDb.create({weight:i.weight,rep:i.rep, time:i.time, lb:i.lb})
+                        //처음 나온거.
+                        console.log('처음 나옴')
+                        if(i.time!==null){
+                            // 유산소 운동의 경우
+                            let response = await SetsDb.findBy({time_eq:i.time})
+                            if(response === null){
+                                response = await SetsDb.create({weight:i.weight,rep:i.rep, time:i.time, lb:i.lb})
+                            }
+                            result = [...result,response.id]
+                            result[j] = {key:false,value:response.id}
+                        }else{
+                            // 무산소 운동의 경우
+                            let response = await SetsDb.findBy({weight_eq:i.weight, rep_eq:i.rep, lb_eq:i.lb})
+                            if(response === null){
+                                response = await SetsDb.create({weight:i.weight,rep:i.rep, time:i.time, lb:i.lb})
+                            }
+                            result[j] = {key:false,value:response.id}
                         }
-                        result = [...result,response.id]
-                    }
-                    if(j===data.length-1){
-                        resolve(result)
+                        if(result.length === data.length){
+                            resolve(result)
+                        }
                     }
                 })
             }
             getdata()
         })
-
-        console.log('saveSets 들어옴')
-        let result = []
-        data.map(async(i,j)=>{
-            if(i.time!==null){
-                // 유산소 운동의 경우
-                let response = await SetsDb.findBy({time_eq:i.time})
-                if(response === null){
-                    // 없다면 추가
-                    response = await SetsDb.create({weight:i.weight,rep:i.rep, time:i.time, lb:i.lb})
-                }
-                console.log(response.id)
-                result = [...result,response.id]
-                console.log(result)
-            }else{
-                // 무산소 운동의 경우
-                let response = await SetsDb.findBy({weight_eq:i.weight, rep_eq:i.rep, lb_eq:i.lb})
-                if(response === null){
-                    // 없다면 추가
-                    response = await SetsDb.create({weight:i.weight,rep:i.rep, time:i.time, lb:i.lb})
-                }
-                console.log(response.id)
-                result = [...result,response.id]
-                console.log(result)
-            }
-            if(j===data.length-1){
-                console.log('result : ')
-                console.log(result)
-                return result
-            }
-            // 같은 값이 중복으로 들어가는 경우 방지
-            // if(j>=1){
-            //     if(i === data[j]){
-            //         result = [...result,result[j-1]]
-            //     }else{
-            //         if(i.time!==null){
-            //             // 유산소 운동의 경우
-            //             let response = await SetsDb.findBy({time_eq:i.time})
-            //             if(response === null){
-            //                 // 없다면 추가
-            //                 response = await SetsDb.create({weight:i.weight,rep:i.rep, time:i.time, lb:i.lb})
-            //             }
-            //             console.log(response.id)
-            //             result = [...result,response.id]
-            //             console.log(result)
-            //         }else{
-            //             // 무산소 운동의 경우
-            //             let response = await SetsDb.findBy({weight_eq:i.weight, rep_eq:i.rep, lb_eq:i.lb})
-            //             if(response === null){
-            //                 // 없다면 추가
-            //                 response = await SetsDb.create({weight:i.weight,rep:i.rep, time:i.time, lb:i.lb})
-            //             }
-            //             console.log(response.id)
-            //             result = [...result,response.id]
-            //             console.log(result)
-            //         }
-            //     }
-            // }else{
-            //     if(i.time!==null){
-            //         // 유산소 운동의 경우
-            //         let response = await SetsDb.findBy({time_eq:i.time})
-            //         if(response === null){
-            //             // 없다면 추가
-            //             response = await SetsDb.create({weight:i.weight,rep:i.rep, time:i.time, lb:i.lb})
-            //         }
-            //         console.log(response.id)
-            //         result = [...result,response.id]
-            //         console.log(result)
-            //     }else{
-            //         // 무산소 운동의 경우
-            //         let response = await SetsDb.findBy({weight_eq:i.weight, rep_eq:i.rep, lb_eq:i.lb})
-            //         if(response === null){
-            //             // 없다면 추가
-            //             response = await SetsDb.create({weight:i.weight,rep:i.rep, time:i.time, lb:i.lb})
-            //         }
-            //         console.log(response.id)
-            //         result = [...result,response.id]
-            //         console.log(result)
-            //     }
-            // }
-            // if(j===data.length-1){
-            //     console.log('res:')
-            //     console.log(result)
-            // }
-        })
     }
-    async function saveWorkoutSessionTag(title,tag,exist,date){
+    async function saveWorkoutSessionTag(title,tag,exist,workoutId){
         const title_id = await saveSession(title)
         // ok
-        let tagId = [0]
+        let tagId = [1]
         if(tag.length !== 0){
             tagId = []
             tag.map((i)=>{
                 tagId = [...tagId,i.id]
             })
         }
+        
         tagId.map(async(i)=>{
-            if(exist.length === 0){
-                console.log('관계형 데이터베이스 테이블에 넣기')
-                // 해당 날짜에 운동기록 없으니까 쏙쏙 넣어줘야함
-                const props = {
-                   workout_id: date,
-                   session_id: title_id,
-                   tag_id:i
-                }
-                await Workout_Session_Tag.create(props)
-            }else{
-                // 운동 기록을 수정하는 경우
-                // 비교해서 사라진거 -> 삭제, 새로 생긴거 추가
-                console.log('해당 날짜에 workout 존재')
+            const props = {
+                workout_id: workoutId,
+                session_id: title_id,
+                tag_id:i
             }
+            await Workout_Session_Tag.create(props)
         })
+        
+        
         return title_id
     }
+
+
     async function checkWorkoutSessionTag(date){
         // 해당 날짜에 workout_session_tag rows가 있으면 리턴, 없으면 []리턴
         const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('upgradeDB.db'))
@@ -346,23 +311,25 @@ const Workout = ({ route }) => {
         return rows
     }
     async function saveSessionSet(data, title_id, workoutid, itemId){
-        // const title_id = await saveSession(title)
-        // console.log('title_id : ' + title_id)
-        console.log(workoutid,itemId)
-        // itemId가 0일 경우 비교필요 없음, 0이 아닐 경우 비교해야함
-
+        let target
         if(itemId!==0){
             //비교시작해라
             //checkSessionSets
         }else{
             //비교할 필요 없이 새로 넣는거라서 그냥 무지성때려박기
-            console.log('관계형데이터베이스 테이블 session set에 추가')
+            
             //set 개수만큼 map -> 한 줄씩 넣기.
             saveSets(data).then((set_id)=>{
                 set_id.map(async(i)=>{
+                    console.log(i)
+                    if(i.key===false){
+                        target = i.value
+                    }else{
+                        target = set_id[i.value].value
+                    }
                     const props = {
                         session_id: title_id,
-                        set_id: i,
+                        set_id: target,
                         workout_id: workoutid
                     }
                     await Session_Set.create(props)
@@ -376,18 +343,17 @@ const Workout = ({ route }) => {
         const {itemId} = route.params;
         const {date} = route.params
 
-        const exist = await checkWorkoutSessionTag(date)
+        const workout_session_tag_prev = await checkWorkoutSessionTag(date)
+        let workoutid = await saveWorkout(itemId,date)
 
         // session 개수만큼 map
         target.map(async(item,index)=>{
-            let workoutid = await saveWorkout(itemId,date)      
-            //ok
-
-            const title_id = await saveWorkoutSessionTag(item.title,item.tag,exist,workoutid)
+            const title_id = await saveWorkoutSessionTag(item.title,item.tag,workout_session_tag_prev,workoutid)
             saveSessionSet(item.data,title_id,workoutid,itemId)
         })
     }
 
+    // 태그 자체를 지움
     function deleteTag(){
         TagDb.destroy(tagUpdate.id)
         const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('upgradeDB.db'))
@@ -398,19 +364,26 @@ const Workout = ({ route }) => {
         setTagUpdate({
             name: '',
             color: '',
-            id:0,
+            id:1,
             index: null
         })
         handleTagDelete(whichTag,tagUpdate.index)
     }
 
+    // 새로운 태그를 등록
     function handleTagAdd(index){
-        //console.log(AllTag)
         // 체크해서 이미 있으면 아무것도 안함.
-        let color = AllTag[index].color
-        let name = AllTag[index].name
+        const color = AllTag[index].color
+        const name = AllTag[index].name
+        const tagId = AllTag[index].id
+        const resultobj = {
+            color:color,
+            name:name,
+            id:tagId
+        }
 
         let temp = [...DATA];
+        let addtemp = [...addDATA];
 
         let istrue = false
         temp[whichTag].tag.map((i,j)=>{
@@ -421,23 +394,57 @@ const Workout = ({ route }) => {
 
         // 찾는함수
         if(!istrue){
-            //문제 없음
+            //길이가 0인 경우 그냥 바꿔끼기
             if(temp[whichTag].tag.length === 0){
-                temp[whichTag].tag = [...temp[whichTag].tag,{color:color,name:name,id:AllTag[index].id}]
+                temp[whichTag].tag = [...temp[whichTag].tag,resultobj]
             }else{
+                //이미 태그가 존재하면 그 뒤에 이어붙이기
                 if(temp[whichTag].tag[0].name===''){
-                    temp[whichTag].tag[0] = {...temp[whichTag].tag[index], color:color,name:name,id:AllTag[index].id};
+                    temp[whichTag].tag[0] = {...temp[whichTag].tag[index], color:color,name:name,id:tagId};
                 }else{
-                    temp[whichTag].tag = [...temp[whichTag].tag,{color:color,name:name,id:AllTag[index].id}]
+                    temp[whichTag].tag = [...temp[whichTag].tag,resultobj]
                 }
             }
+            
+            addtemp = [...addtemp,{workout_id:itemId,session_id:temp[whichTag].id,tag_id:tagId}]
+            
             setDATA(temp)
+            setaddDATA(addtemp)
+            console.log(addtemp)
         }
-        //console.log(temp)
+    }
+    function checkAdded(target){
+        // addDATA에 있는 값이면 return 0
+        let addTemp = [...addDATA]
+        const result = addDATA.findIndex(element=>
+            element.session_id === target.session_id && element.tag_id === target.tag_id && element.workout_id === target.workout_id
+        )
+        
+        if(result === -1)return 0
+        else{
+            addTemp.splice(result,1)
+            setaddDATA(addTemp)
+            return 1
+        }   
     }
     function handleTagDelete(index,innerindex){
-        const temp = DATA[index].tag.filter((item,j)=>j!==innerindex);
-        
+        // addDATA에 없다면 delDATA에만 지워진 태그 넣어주고, addDATA에 있다면 그것도 지워줘야 함.
+        let deltemp = [...delDATA]
+        const target = {
+            workout_id:itemId,
+            session_id:DATA[index].id,
+            tag_id:DATA[index].tag[innerindex].id
+        }
+        if(checkAdded(target) !== 1){
+            deltemp = [...deltemp,target]
+            setdelDATA(deltemp)
+        }
+
+        const temp = DATA[index].tag.filter((item,j)=>
+            j!==innerindex
+        );
+
+        // 다 가져와서 tag만 temp로 갈아끼우네
         let result = [...DATA];
         result[index] = {...result[index],tag:temp}
         setDATA(result)
@@ -484,9 +491,8 @@ const Workout = ({ route }) => {
         }
     }
     function handleTagCustomizeAdd(event,color){
-        const id = AllTag.length+1
+        const id = AllTag.length+2
         setTagCustomize({name:event,color:color,id:id})
-
     }
 
     function delSets(index,innerindex){
@@ -512,10 +518,12 @@ const Workout = ({ route }) => {
             weight:DATA[index].data[count-1].weight,
             time:DATA[index].data[count-1].time,
             lb:DATA[index].data[count-1].lb,
-            id:DATA[index].data[count-1].id + 1
+            session_set_id:0,
+            sets_id:0
         }
         let temp = [...DATA];
         temp[index].data[count] = push
+        
         setDATA(temp)
 
         //angle state 처리
@@ -561,8 +569,9 @@ const Workout = ({ route }) => {
     //setAllTag()에 수정된 데이터 push
     function addNewTag(){
         if(tagCustomize.name !== ''){
+            console.log(tagCustomize)
             setAllTag(prevArr => [...prevArr,{name:tagCustomize.name,color:tagCustomize.color,id:tagCustomize.id}])
-            setTagCustomize({name:'',color:'#B54B4B'})
+            setTagCustomize({name:'',color:'#B54B4B',id:1})
             // db에 수정된 데이터 upload
             TagDb.create({name:tagCustomize.name,color:tagCustomize.color})
         }
@@ -592,8 +601,9 @@ const Workout = ({ route }) => {
         if(DATA[index].title !== ''){
             const temp = {
                 title:'',
-                tag:[],
-                data:[{rep:'',weight:'',time:null,lb:0,id:0}]
+                id:0,
+                tag:[{name:'',color:'',id:1}],
+                data:[{rep:'',weight:'',time:null,lb:0,session_set_id:0,sets_id:0}]
             }
             let res = [...DATA];
             res[index + 1] = temp
@@ -627,7 +637,7 @@ const Workout = ({ route }) => {
     function deleteWorkout(index){
         console.log('삭제버튼 누름')
         if(DATA.length === 1){
-            setDATA([{title:'',tag:[],data:[{rep:'',weight:'',time:''}]}])
+            setDATA([{title:'',id:0,tag:[{name:'',color:'',id:1}],data:[{rep:'',weight:'',time:''}]}])
             //angle state 처리
             setIsPressed([{data:[false]}])
             setMeasure([false])
@@ -1275,6 +1285,12 @@ const Workout = ({ route }) => {
             console.log(response.rows)
         })
     }
+    function showAllDATA (){
+        const databaseLayer = new DatabaseLayer(async () => SQLite.openDatabase('upgradeDB.db'))
+        DATA.map((i)=>{
+            console.log(i)
+        })
+    }
 
     function renderForm(data,index){
         return(
@@ -1354,6 +1370,12 @@ const Workout = ({ route }) => {
                     <Button
                         onPress={showAll}
                         title="show All"
+                        color="#841584"
+                        accessibilityLabel="Learn more about this purple button"
+                    />
+                    <Button
+                        onPress={showAllDATA}
+                        title="show All DATA"
                         color="#841584"
                         accessibilityLabel="Learn more about this purple button"
                     />

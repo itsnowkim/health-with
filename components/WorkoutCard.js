@@ -6,18 +6,22 @@ import Line3 from "./Line3";
 import Tag from "./Tag";
 
 const WorkoutCard = ({DATA}) => {
-    //const [DATA,setDATA] = useState([])
 
     const onPress = () => {
         console.log('hello')
-        
     }
 
-    function rendersets(item) {
-        return item.data.map((data,index)=>{
-            //console.log(data)
-            return(
-                <View key={index} style={{flexDirection:'row',marginVertical:1, justifyContent:'space-around'}}>
+    function renderAerobic(data,index){
+        return(
+            <>
+                <Text style={styles.text}>운동시간</Text>
+                <View></View>
+                <Text style={styles.text}>{data.time}분</Text>
+            </>
+        )
+    }
+    function renderNonAerobic(data,index){
+        return(<>
                     <Text style={styles.text}>{index + 1}세트</Text>
                     {
                         data.lb?
@@ -25,13 +29,24 @@ const WorkoutCard = ({DATA}) => {
                         <Text style={styles.text}>{data.weight}kg</Text>
                     }
                     <Text style={styles.text}>{data.rep}회</Text>
+                </>
+        )
+    }
+
+    function rendersets(item) {
+        return item.map((data,index)=>{
+            return(
+                <View key={index} style={{flexDirection:'row',marginVertical:1, justifyContent:'space-around'}}>
+                    {data.time !== null ?
+                        renderAerobic(data,index):
+                        renderNonAerobic(data,index)
+                    }
                 </View>
             )
         })
     }
 
     return DATA.map((item,index)=>{
-        //console.log(item)
         return(
             <View key={index} style={styles.container}>
                 <TouchableOpacity onPress={onPress} style={styles.item}>
@@ -45,7 +60,7 @@ const WorkoutCard = ({DATA}) => {
                     </View>
                     <Line3/>
                     <View style={{marginTop:SIZES.padding/2}}>
-                        {rendersets(item)}
+                        {rendersets(item.data)}
                     </View>
                 </TouchableOpacity>
             </View>

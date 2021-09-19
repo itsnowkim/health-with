@@ -19,7 +19,7 @@ export default class Session_Set extends BaseModel {
       id: { type: types.INTEGER, primary_key: true },
       session_id: { type: types.INTEGER },
       set_id: { type: types.INTEGER },
-      workout_id:{ type: types.INTEGER }
+      workout_id:{ type: types.INTEGER },
     }
   }
 }

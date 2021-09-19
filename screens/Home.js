@@ -41,9 +41,10 @@ const Home = ( {navigation} ) => {
 
   const [DATA,setDATA] = useState([
     {
-        title:'',
-        tag:[{name:'',color:'',id:''}],
-        data:[{rep:'',weight:'',time:''}]
+      title:'',
+      id:0,
+      tag:[{name:'',color:'',id:1}],
+      data:[{lb:0,rep:'',weight:'',time:null,session_set_id:0,sets_id:0}]
     }
   ])
 
@@ -95,6 +96,7 @@ const Home = ( {navigation} ) => {
           .then((response) => {
             const responseList = response.rows
             let temp = getDATAfromDB(responseList)
+            console.log(temp)
             setDATA(temp)
           })
           .catch((err) => {
