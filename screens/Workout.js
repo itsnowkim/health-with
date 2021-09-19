@@ -238,6 +238,7 @@ const Workout = ({ route }) => {
             function getdata(){
                 let result = []
                 let temp_organized = organized
+                console.log(temp_organized)
                 
                 data.map(async(i,j)=>{
                     if(temp_organized[j]!==j){
@@ -263,7 +264,7 @@ const Workout = ({ route }) => {
                             }
                             result[j] = {key:false,value:response.id}
                         }
-                        if(result.length === data.length){
+                        if(result.length === data.length && !result.includes(undefined)){
                             resolve(result)
                         }
                     }
