@@ -16,7 +16,6 @@ import Line3 from '../components/Line3';
 import Tag from '../components/Tag';
 import Line2 from '../components/Line2';
 import Line1 from '../components/Line1';
-import { FontAwesome } from '@expo/vector-icons';
 
 import Animated, { color } from 'react-native-reanimated';
 import BottomSheet from 'reanimated-bottom-sheet';
@@ -37,6 +36,17 @@ import SessionDb from '../model/Session';
 import Workout_Session_Tag from '../model/Workout_Session_Tag';
 import Session_Set from '../model/Session_Set';
 import { backgroundColor } from 'react-native/Libraries/Components/View/ReactNativeStyleAttributes';
+import {
+  AngleDown,
+  AngleUp,
+  Check,
+  ColorCheck,
+  Fire,
+  Minus,
+  Plus,
+  TrashCan,
+  Wrench,
+} from '../components/Icons';
 
 const Workout = ({ route }) => {
   const [isEnabled, setIsEnabled] = useState([false]);
@@ -92,28 +102,17 @@ const Workout = ({ route }) => {
   const [whichTag, setWhichTag] = useState(0);
 
   const TagColors = [
-    '#B54B4B',
-    '#DB6E15',
-    '#CC8042',
-    '#FBBB0D',
-    '#E6BA35',
-    '#97D53F',
-    '#20C997',
-    '#6A8B3A',
-    '#3A8B46',
-    '#3A8B86',
-    '#32BAB2',
-    '#3790C9',
-    '#576BCF',
-    '#7A5ACB',
-    '#B25ACB',
-    '#CB5A97',
-    '#FF7979',
+    '#39D9A9',
+    '#FB5253',
+    '#FFEC99',
+    '#BF4CDB',
+    '#66D9E8',
+    '#3138FF',
   ];
 
   const [tagCustomize, setTagCustomize] = useState({
     name: '',
-    color: '#B54B4B',
+    color: '#39D9A9',
     id: 1,
   });
   const [tagUpdate, setTagUpdate] = useState({
@@ -855,23 +854,9 @@ const Workout = ({ route }) => {
               }}
             >
               {tagCustomize.name !== '' ? (
-                <FontAwesome
-                  name="check"
-                  color={'#404040'}
-                  style={{
-                    transform: [{ scaleX: 1.2 }, { scaleY: 1.2 }],
-                    marginRight: 20,
-                  }}
-                />
+                <ColorCheck color={'#404040'} />
               ) : (
-                <FontAwesome
-                  name="check"
-                  color={COLORS.gray}
-                  style={{
-                    transform: [{ scaleX: 1.2 }, { scaleY: 1.2 }],
-                    marginRight: 20,
-                  }}
-                />
+                <ColorCheck color={COLORS.gray} />
               )}
             </TouchableOpacity>
           </View>
@@ -942,13 +927,7 @@ const Workout = ({ route }) => {
                   );
                 }}
               >
-                <FontAwesome
-                  name="trash"
-                  style={{
-                    transform: [{ scaleX: 1.2 }, { scaleY: 1.2 }],
-                    marginRight: 10,
-                  }}
-                />
+                <TrashCan />
               </TouchableOpacity>
               <View
                 style={{
@@ -984,17 +963,9 @@ const Workout = ({ route }) => {
                 }}
               >
                 {tagUpdate.name !== '' ? (
-                  <FontAwesome
-                    name="check"
-                    color={'#404040'}
-                    style={{ transform: [{ scaleX: 1.2 }, { scaleY: 1.2 }] }}
-                  />
+                  <ColorCheck color={'#404040'} />
                 ) : (
-                  <FontAwesome
-                    name="check"
-                    color={COLORS.gray}
-                    style={{ transform: [{ scaleX: 1.2 }, { scaleY: 1.2 }] }}
-                  />
+                  <ColorCheck color={COLORS.gray} />
                 )}
               </TouchableOpacity>
             </View>
@@ -1019,10 +990,7 @@ const Workout = ({ route }) => {
             TagSheet.current.snapTo(1);
           }}
         >
-          <FontAwesome
-            name="check"
-            style={{ transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }] }}
-          />
+          <Check />
         </TouchableOpacity>
       </View>
       <View style={styles.tagTitleContainer}>
@@ -1078,26 +1046,14 @@ const Workout = ({ route }) => {
               style={{ marginTop: 5 }}
               onPress={() => setFirstAngle(!firstAngle)}
             >
-              <FontAwesome
-                name="angle-down"
-                style={{
-                  transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }],
-                  marginRight: 20,
-                }}
-              />
+              <AngleDown />
             </TouchableOpacity>
           ) : (
             <TouchableOpacity
               style={{ marginTop: 5 }}
               onPress={() => setFirstAngle(!firstAngle)}
             >
-              <FontAwesome
-                name="angle-up"
-                style={{
-                  transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }],
-                  marginRight: 20,
-                }}
-              />
+              <AngleUp />
             </TouchableOpacity>
           )}
         </View>
@@ -1120,26 +1076,14 @@ const Workout = ({ route }) => {
               style={{ marginTop: 5 }}
               onPress={() => setSecondAngle(!secondAngle)}
             >
-              <FontAwesome
-                name="angle-down"
-                style={{
-                  transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }],
-                  marginRight: 20,
-                }}
-              />
+              <AngleDown />
             </TouchableOpacity>
           ) : (
             <TouchableOpacity
               style={{ marginTop: 5 }}
               onPress={() => setSecondAngle(!secondAngle)}
             >
-              <FontAwesome
-                name="angle-up"
-                style={{
-                  transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }],
-                  marginRight: 20,
-                }}
-              />
+              <AngleUp />
             </TouchableOpacity>
           )}
         </View>
@@ -1245,19 +1189,8 @@ const Workout = ({ route }) => {
             }}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              {isPressed && isPressed[index].data[innerindex] && (
-                <FontAwesome
-                  name="angle-up"
-                  color={COLORS.primary}
-                  style={{ transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }] }}
-                />
-              )}
-              {isPressed && !isPressed[index].data[innerindex] && (
-                <FontAwesome
-                  name="angle-down"
-                  style={{ transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }] }}
-                />
-              )}
+              {isPressed && isPressed[index].data[innerindex] && <AngleUp />}
+              {isPressed && !isPressed[index].data[innerindex] && <AngleDown />}
               <Text style={[styles.text, { marginLeft: SIZES.padding2 * 2 }]}>
                 {innerindex + 1}세트
               </Text>
@@ -1303,10 +1236,7 @@ const Workout = ({ route }) => {
               delSets(index, innerindex);
             }}
           >
-            <FontAwesome
-              name="minus"
-              style={{ transform: [{ scaleX: 1 }, { scaleY: 0.5 }] }}
-            />
+            <Minus />
           </TouchableOpacity>
         </View>
         {isPressed &&
@@ -1371,11 +1301,7 @@ const Workout = ({ route }) => {
             addSets(index);
           }}
         >
-          <FontAwesome
-            name="plus"
-            color={COLORS.primary}
-            style={{ transform: [{ scaleX: 1.2 }, { scaleY: 1.2 }] }}
-          />
+          <Plus />
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => {
@@ -1451,14 +1377,7 @@ const Workout = ({ route }) => {
               );
             }}
           >
-            <FontAwesome
-              name="trash"
-              color={COLORS.gray}
-              style={{
-                transform: [{ scaleX: 1.2 }, { scaleY: 1.2 }],
-                marginRight: 10,
-              }}
-            />
+            <TrashCan />
           </TouchableOpacity>
         </View>
         <Line2 />
@@ -1498,19 +1417,8 @@ const Workout = ({ route }) => {
         <View style={{ margin: '3%' }}>
           <View style={styles.rowcontainer}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <FontAwesome
-                name="fire"
-                color={COLORS.primary}
-                style={{
-                  transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }],
-                  marginRight: 10,
-                }}
-              />
-              <Text
-                style={{ fontFamily: 'RobotoRegular', fontSize: SIZES.body3 }}
-              >
-                유산소
-              </Text>
+              <Fire />
+              <Text style={styles.title}>유산소</Text>
             </View>
             <Switch
               trackColor={{ true: COLORS.primary }}
@@ -1522,19 +1430,8 @@ const Workout = ({ route }) => {
           {!isEnabled[index] ? (
             <View style={styles.rowcontainer}>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <FontAwesome
-                  name="wrench"
-                  color={COLORS.primary}
-                  style={{
-                    transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }],
-                    marginRight: 10,
-                  }}
-                />
-                <Text
-                  style={{ fontFamily: 'RobotoRegular', fontSize: SIZES.body3 }}
-                >
-                  단위변환
-                </Text>
+                <Wrench />
+                <Text style={styles.title}>단위변환</Text>
               </View>
               <Switch
                 trackColor={{ true: COLORS.primary }}
@@ -1559,22 +1456,7 @@ const Workout = ({ route }) => {
     );
   }
 
-  // function renderForm(data,index){
-  //     return(
-  //         <View key={index}>
-  //         {renderHeader(index)}
-  //         {
-  //             checkform(index)?
-  //             (<>{
-  //               isPressed&&renderBody(index)
-  //             }</>):
-  //             <></>
-  //         }
-  //         </View>
-  //     )
-  // }
-
-  function renderForm(data, index) {
+  function renderForm(index) {
     return isRendered() ? (
       <View key={index}>
         {isPressed ? (
@@ -1598,7 +1480,7 @@ const Workout = ({ route }) => {
       >
         <ScrollView>
           <View style={{ margin: '5%' }}>
-            {DATA.map((data, index) => renderForm(data, index))}
+            {DATA.map((data, index) => renderForm(index))}
           </View>
           <View style={{ height: 600 }}></View>
         </ScrollView>
@@ -1645,10 +1527,9 @@ const styles = StyleSheet.create({
   title: {
     fontSize: SIZES.body3,
     fontFamily: 'RobotoMedium',
-    paddingRight: SIZES.base,
   },
   text: {
-    fontFamily: 'RobotoLight',
+    fontFamily: 'RobotoRegular',
     fontSize: SIZES.body3,
   },
   tagContainer: {

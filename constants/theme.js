@@ -1,29 +1,29 @@
-import { Dimensions } from "react-native";
-const { width, height } = Dimensions.get("window");
+import { Dimensions } from 'react-native';
+const { width, height } = Dimensions.get('window');
 
 import { useFonts } from 'expo-font';
 
 export const COLORS = {
   //BASE COLORS
-  primary: "#D4003C", //main color
-  secondary: "#FFE6ED",
-  lightPrimary: "#EABECB",
-  lightSecondary: "#FFD7E2",
+  primary: '#D4003C', //main color
+  secondary: '#FFE6ED',
+  lightPrimary: '#EABECB',
+  lightSecondary: '#FFD7E2',
 
   //COLORS
-  gray: "#CDCDD2",
+  gray: '#CDCDD2',
   lightWhite: '#F9FAFB',
-  lightGray: "#F5F5F6",
-  lightGray2: "#F6F6F7",
-  lightGray3: "#EFEFF1",
-  lightGray4: "#F8F8F9",
-  transparent: "transparent",
-  darkgray: "#898C95",
-  darkMode: "#333248",
+  lightGray: '#F5F5F6',
+  lightGray2: '#F6F6F7',
+  lightGray3: '#EFEFF1',
+  lightGray4: '#F8F8F9',
+  transparent: 'transparent',
+  darkgray: '#898C95',
+  darkMode: '#333248',
 
   //iPhone color
-  blue: "#007AFF",
-  skyBlue: "#1479FF"
+  blue: '#007AFF',
+  skyBlue: '#1479FF',
 };
 
 export const SIZES = {
