@@ -30,7 +30,7 @@ export const SIZES = {
   //GLOBAL SIZES
   base: 8,
   font: 14,
-  radius: 6,
+  radius: 8,
   padding: 10,
   padding2: 12,
   padding3: 14,
