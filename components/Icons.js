@@ -16,8 +16,7 @@ export const ColorCheck = ({ color }) => {
       name="check"
       color={color}
       style={{
-        transform: [{ scaleX: 1.2 }, { scaleY: 1.2 }],
-        marginRight: 20,
+        transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }],
       }}
     />
   );
@@ -29,8 +28,7 @@ export const TrashCan = () => {
       name="trash"
       color={COLORS.gray}
       style={{
-        transform: [{ scaleX: 1.2 }, { scaleY: 1.2 }],
-        marginRight: 10,
+        transform: [{ scaleX: 2 }, { scaleY: 2 }],
       }}
     />
   );

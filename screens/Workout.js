@@ -802,23 +802,27 @@ const Workout = ({ route }) => {
   function renderfirstSection() {
     return (
       <View>
-        <View horizontal={true} style={styles.alltag}>
-          {TagColors.map((d, i) => (
-            <TouchableOpacity
-              key={i}
-              onPress={() => {
-                setTagCustomize({
-                  name: tagCustomize.name,
-                  color: d,
-                  id: tagCustomize.id,
-                });
-              }}
-            >
-              <View style={[styles.alltagcolor, { backgroundColor: d }]}></View>
-            </TouchableOpacity>
-          ))}
+        <View style={{ alignItems: 'center' }}>
+          <View horizontal={true} style={styles.alltag}>
+            {TagColors.map((d, i) => (
+              <TouchableOpacity
+                key={i}
+                onPress={() => {
+                  setTagCustomize({
+                    name: tagCustomize.name,
+                    color: d,
+                    id: tagCustomize.id,
+                  });
+                }}
+              >
+                <View
+                  style={[styles.alltagcolor, { backgroundColor: d }]}
+                ></View>
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
-        <View style={{ marginTop: 10 }}>
+        <View>
           <View
             style={{
               flexDirection: 'row',
@@ -828,27 +832,25 @@ const Workout = ({ route }) => {
           >
             <TextInput
               style={{
-                height: 23,
+                height: 25,
                 fontFamily: 'RobotoBold',
-                fontSize: SIZES.body5,
+                fontSize: SIZES.body4,
                 color: COLORS.lightWhite,
                 backgroundColor: tagCustomize.color,
-                paddingRight: 5,
-                paddingLeft: 5,
+                paddingHorizontal: 12,
                 borderRadius: SIZES.radius,
+                marginRight: 20,
               }}
               onChangeText={(event) =>
                 handleTagCustomizeAdd(event, tagCustomize.color)
               }
               value={tagCustomize.name}
-              // onEndEditing={()=>onEndEditing()}
               autoCompleteType="off"
               placeholder="태그명을 입력하세요"
               autoCorrect={false}
               placeholderTextColor="#ffffff"
             />
             <TouchableOpacity
-              style={{ marginLeft: 10 }}
               onPress={() => {
                 addNewTag();
               }}
@@ -884,22 +886,26 @@ const Workout = ({ route }) => {
             </TouchableOpacity>
           ))}
         </ScrollView>
-        <View style={styles.alltag}>
-          {TagColors.map((d, i) => (
-            <TouchableOpacity
-              key={i}
-              onPress={() => {
-                setTagUpdate({
-                  name: tagUpdate.name,
-                  color: d,
-                  id: tagUpdate.id,
-                  index: tagUpdate.index,
-                });
-              }}
-            >
-              <View style={[styles.alltagcolor, { backgroundColor: d }]}></View>
-            </TouchableOpacity>
-          ))}
+        <View style={{ alignItems: 'center' }}>
+          <View style={styles.alltag}>
+            {TagColors.map((d, i) => (
+              <TouchableOpacity
+                key={i}
+                onPress={() => {
+                  setTagUpdate({
+                    name: tagUpdate.name,
+                    color: d,
+                    id: tagUpdate.id,
+                    index: tagUpdate.index,
+                  });
+                }}
+              >
+                <View
+                  style={[styles.alltagcolor, { backgroundColor: d }]}
+                ></View>
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
         {tagUpdate.index !== null ? (
           <View style={{ marginTop: 10 }}>
@@ -931,18 +937,19 @@ const Workout = ({ route }) => {
               </TouchableOpacity>
               <View
                 style={{
-                  height: 20,
+                  height: 25,
                   backgroundColor: tagUpdate.color,
                   borderRadius: SIZES.radius,
                   justifyContent: 'center',
+                  marginHorizontal: 30,
                 }}
               >
-                <View style={{ paddingHorizontal: 8 }}>
+                <View style={{ paddingHorizontal: 12 }}>
                   <TextInput
                     style={{
                       color: COLORS.lightWhite,
                       fontFamily: 'RobotoBold',
-                      fontSize: SIZES.body5,
+                      fontSize: SIZES.body4,
                     }}
                     onChangeText={(event) =>
                       handleTagCustomizeUpdate(event, tagUpdate.color)
@@ -957,7 +964,6 @@ const Workout = ({ route }) => {
                 </View>
               </View>
               <TouchableOpacity
-                style={{ marginLeft: 10 }}
                 onPress={() => {
                   updateTagCustom();
                 }}
@@ -1559,10 +1565,9 @@ const styles = StyleSheet.create({
   },
   alltag: {
     flexDirection: 'row',
-    marginTop: SIZES.padding2,
-    marginLeft: '1%',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
+    marginVertical: 30,
+    width: SIZES.width * 0.7,
+    justifyContent: 'space-around',
   },
   alltagcolor: {
     marginVertical: 5,

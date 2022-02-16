@@ -13,7 +13,7 @@ const Tag = ({ name, color }) => {
           justifyContent: 'center',
         }}
       >
-        <View style={{ paddingHorizontal: 8 }}>
+        <View style={{ paddingHorizontal: 12 }}>
           <Text style={styles.tag}>{name}</Text>
         </View>
       </View>
