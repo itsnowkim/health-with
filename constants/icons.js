@@ -4,7 +4,8 @@ export const list = require('../assets/icons/list.png');
 export const search = require('../assets/icons/search.png');
 export const star = require('../assets/icons/star.png');
 export const user = require('../assets/icons/user.png');
-export const home = require('../assets/icons/home.svg');
+export const home = require('../assets/icons/home.png');
+export const settings = require('../assets/icons/settings.png');
 
 export default {
   back,
@@ -14,4 +15,5 @@ export default {
   star,
   user,
   home,
+  settings,
 };
