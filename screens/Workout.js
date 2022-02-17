@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -1184,6 +1184,10 @@ const Workout = ({ route }) => {
     );
   }
 
+  const focusToText = () => {
+    console.log('focus');
+  };
+
   function rendersets(item, innerindex, index) {
     //console.log(isPressed)
     return (
@@ -1202,15 +1206,20 @@ const Workout = ({ route }) => {
               </Text>
             </View>
           </TouchableOpacity>
+
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <View style={{ alignItems: 'center' }}>
+            <View style={{ alignItems: 'center', paddingHorizontal: 15 }}>
               <TextInput
                 keyboardType="numeric"
-                style={{ fontSize: SIZES.body4, fontFamily: 'RobotoRegular' }}
+                style={{
+                  flex: 1,
+                  fontSize: SIZES.body4,
+                  fontFamily: 'RobotoRegular',
+                }}
                 onChangeText={(event) => handleWeight(event, innerindex, index)}
                 value={DATA[index].data[innerindex].weight.toString()}
                 autoCompleteType="off"
-                placeholder="  "
+                placeholder="0"
                 autoCorrect={false}
               />
               <Line1 />
@@ -1221,6 +1230,7 @@ const Workout = ({ route }) => {
               <Text style={styles.text}>kg</Text>
             )}
           </View>
+
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <View style={{ alignItems: 'center' }}>
               <TextInput
@@ -1229,7 +1239,7 @@ const Workout = ({ route }) => {
                 onChangeText={(event) => handleReps(event, innerindex, index)}
                 value={DATA[index].data[innerindex].rep.toString()}
                 autoCompleteType="off"
-                placeholder="  "
+                placeholder="0"
                 autoCorrect={false}
               />
               <Line1 />
@@ -1362,7 +1372,6 @@ const Workout = ({ route }) => {
             onChangeText={(event) => handelTitle(event, index)}
             value={DATA[index].title}
             placeholder="제목"
-            // onEndEditing={()=>onEndEditing()}
             autoCompleteType="off"
             autoCorrect={false}
           />
@@ -1417,7 +1426,6 @@ const Workout = ({ route }) => {
   }
 
   function renderBody(index) {
-    //console.log(DATA)
     return (
       <>
         <View style={{ margin: '3%' }}>
