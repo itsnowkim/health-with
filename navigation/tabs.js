@@ -13,7 +13,15 @@ const Tabs = () => {
   return (
     <Tab.Navigator
       tabBarOptions={{
-        activeTintColor: 'tomato',
+        style: {
+          borderTopColor: '#ffffff',
+          elevation: 0, // for Android
+          shadowOffset: {
+            width: 0,
+            height: 0, // for iOS
+          },
+        },
+        activeTintColor: `${COLORS.primary}`,
         inactiveTintColor: 'gray',
       }}
     >
